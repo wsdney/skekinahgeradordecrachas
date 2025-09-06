@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Gerador de Crachás — v8.2 (drag & resize + borda)</title>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --panel-bg: #0f172a; --panel-fg: #e5e7eb; --muted: #94a3b8;
+      --accent: #22d3ee; --btn:#3b82f6; --btn2:#10b981; --danger:#ef4444;
+      --surface:#0b1220; --card:#111827; --border:#1f2937;
+    }
+    html,body{height:100%;margin:0;font-family:Roboto,system-ui,Arial;background:var(--surface);color:var(--panel-fg)}
+    .wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;padding:16px;box-sizing:border-box}
+    .panel{background:var(--panel-bg);border:1px solid var(--border);border-radius:12px;padding:14px;max-height:calc(100vh - 32px);overflow:auto}
+    .h{margin:0 0 8px;font-size:18px;font-weight:700}
+    .sub{color:var(--muted);font-size:12px;margin-bottom:10px}
+    .row{display:flex;gap:8px;align-items:center;margin:6px 0}
+    .col{display:grid;gap:6px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    input[type="number"], input[type="text"], select, textarea { width:100%; padding:8px; background:var(--card); color:var(--panel-fg); border:1px solid var(--border); border-radius:8px; box-sizing:border-box; }
+    input[type="color"]{width:100%;height:36px;padding:0;border:1px solid var(--border);background:var(--card);border-radius:8px}
+    textarea{min-height:96px;resize:vertical}
+    .btn{cursor:pointer;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--btn);color:white;font-weight:600}
+    .btn.secondary{background:var(--btn2)}
+    .btn.ghost{background:var(--card);color:var(--panel-fg)}
+    .btn.danger{background:var(--danger)}
+    .btn.block{width:100%}
+    .section{border-top:1px solid var(--border);margin:12px 0;padding-top:12px}
+
+    /* Stage */
+    .stageWrap{background:#0b1220;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;justify-content:center;align-items:center}
+    #stage{position:relative;background:#ffffff;box-shadow:0 12px 30px rgba(0,0,0,.35);border-radius:10px;overflow:hidden}
+    .badgeBgImage{position:absolute;inset:0;background-size:cover;background-position:center;pointer-events:none;z-index:0}
+    .badgeBorder{position:absolute;inset:0;pointer-events:none;box-sizing:border-box;z-index:1}
+    .item{position:absolute;user-select:none;transform-origin:top left;z-index:2}
+    .item.selected{outline:2px solid var(--accent);outline-offset:0}
+    .item.text{display:flex;align-items:center;justify-content:center;padding:4px}
+    .item.text span{display:block;white-space:pre-wrap}
+    .item.image img{width:100%;height:100%;object-fit:contain;display:block}
+    .hint{color:var(--muted);font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <aside class="panel">
+      <h2 class="h">Editor de Crachás (v8)</h2>
+      <div class="sub">Arraste e redimensione textos e imagens. Use <code>{{NAME}}</code> em qualquer texto para substituir pelos nomes ao gerar o PDF.</div>
+
+      <div class="grid2">
+        <div class="col">
+          <label>Tamanho (cm) — Largura</label>
+          <input id="badgeW" type="number" value="10" step="0.1">
+        </div>
+        <div class="col">
+          <label>Tamanho (cm) — Altura</label>
+          <input id="badgeH" type="number" value="7" step="0.1">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="col">
+          <label>DPI (qualidade)</label>
+          <input id="dpi" type="number" value="150" step="1">
+        </div>
+        <div class="col">
+          <label>Prévia (escala)</label>
+          <select id="previewScale">
+            <option value="1">100%</option>
+            <option value="0.75">75%</option>
+            <option value="0.6" selected>60%</option>
+            <option value="0.5">50%</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="btnAddText" class="btn">+ Texto</button>
+        <button id="btnAddImage" class="btn secondary">+ Imagem</button>
+        <input id="imageInput" type="file" accept="image/*" hidden>
+      </div>
+
+      <div class="row">
+        <button id="btnCenterH" class="btn ghost">Centralizar H</button>
+        <button id="btnCenterV" class="btn ghost">Centralizar V</button>
+      </div>
+
+      <div class="row">
+        <button id="btnDelete" class="btn danger">Remover Selecionado</button>
+        <button id="btnReset" class="btn ghost">Resetar Crachá</button>
+      </div>
+
+      <div class="section">
+        <h3 class="h">Fundo do Crachá</h3>
+        <div class="col">
+          <label>Tipo</label>
+          <select id="bgType">
+            <option value="solid">Cor sólida</option>
+            <option value="gradient">Gradiente</option>
+            <option value="image">Imagem</option>
+            <option value="none">Transparente</option>
+          </select>
+        </div>
+
+        <div class="grid2" id="bgSolidBox">
+          <div class="col"><label>Cor</label><input id="bgColor" type="color" value="#ffffff"></div>
+        </div>
+
+        <div class="grid2" id="bgGradientBox" style="display:none">
+          <div class="col"><label>Cor 1</label><input id="bgGrad1" type="color" value="#3b82f6"></div>
+          <div class="col"><label>Cor 2</label><input id="bgGrad2" type="color" value="#06b6d4"></div>
+          <div class="col"><label>Direção</label>
+            <select id="bgGradDir">
+              <option value="tb">Cima → Baixo</option>
+              <option value="bt">Baixo → Cima</option>
+              <option value="lr">Esquerda → Direita</option>
+              <option value="rl">Direita → Esquerda</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col" id="bgImageBox" style="display:none">
+          <label>Imagem de fundo</label>
+          <input id="bgImage" type="file" accept="image/*">
+          <div class="hint">A imagem cobre todo o crachá (cover).</div>
+        </div>
+      </div>
+
+      <!-- NOVA SEÇÃO: Borda do Crachá -->
+      <div class="section">
+        <h3 class="h">Borda do Crachá</h3>
+        <div class="col">
+          <label><input id="borderEnable" type="checkbox"> Ativar borda</label>
+          <label>Cor da borda</label>
+          <input id="borderCol" type="color" value="#8b3b36">
+          <div class="grid2">
+            <div class="col"><label>Espessura (px)</label><input id="borderWidth" type="number" value="8" min="0"></div>
+            <div class="col"><label>Raio (px)</label><input id="borderRadius" type="number" value="0" min="0"></div>
+          </div>
+          <div class="hint">A borda é desenhada internamente e não altera as dimensões externas do crachá.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="h">Propriedades do Selecionado</h3>
+        <div class="col">
+          <label>Tipo</label>
+          <input id="propType" type="text" disabled value="—">
+        </div>
+
+        <div class="col" id="textProps" style="display:none">
+          <label>Texto</label>
+          <textarea id="propText" placeholder="Digite o texto. Use {{NAME}} onde o nome deve aparecer."></textarea>
+          <div class="grid3">
+            <div class="col"><label>Tamanho</label><input id="propFontSize" type="number" value="28"></div>
+            <div class="col"><label>Cor</label><input id="propColor" type="color" value="#000000"></div>
+            <div class="col"><label>Peso</label>
+              <select id="propWeight"><option value="400">Normal</option><option value="700">Negrito</option></select>
+            </div>
+          </div>
+          <label>Fonte</label>
+          <select id="propFont">
+            <option value="Roboto, sans-serif">Roboto</option>
+            <option value="Open Sans, sans-serif">Open Sans</option>
+            <option value="'Pacifico', cursive">Pacifico (manuscrita)</option>
+            <option value="'Dancing Script', cursive">Dancing Script (manuscrita)</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Arial, sans-serif">Arial</option>
+          </select>
+        </div>
+
+        <div class="grid2">
+          <div class="col"><label>Largura (px)</label><input id="propW" type="number"></div>
+          <div class="col"><label>Altura (px)</label><input id="propH" type="number"></div>
+        </div>
+        <div class="grid2">
+          <div class="col"><label>X (px)</label><input id="propX" type="number"></div>
+          <div class="col"><label>Y (px)</label><input id="propY" type="number"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="h">Geração em Massa (PDF A4)</h3>
+        <div class="col">
+          <label>Nomes (um por linha)</label>
+          <textarea id="namesList" placeholder="Ana Souza\nJoão Silva\n..."></textarea>
+        </div>
+        <div class="grid3">
+          <div class="col"><label>Margem (cm)</label><input id="pdfMargin" type="number" step="0.1" value="0.5"></div>
+          <div class="col"><label>Espaço (cm)</label><input id="pdfGap" type="number" step="0.1" value="0.5"></div>
+          <div class="col"><label>Orientação</label>
+            <select id="pdfOrient"><option value="portrait">Retrato</option><option value="landscape" selected>Paisagem</option></select>
+          </div>
+        </div>
+        <button id="btnGeneratePDF" class="btn block" style="margin-top:8px">Gerar PDF</button>
+      </div>
+
+      <div class="section">
+        <h3 class="h">Salvar</h3>
+        <div class="row">
+          <button id="btnSave" class="btn ghost">Salvar no Navegador</button>
+          <button id="btnLoad" class="btn ghost">Carregar</button>
+        </div>
+        <div class="row">
+          <button id="btnExport" class="btn ghost">Exportar JSON</button>
+          <button id="btnImport" class="btn ghost">Importar JSON</button>
+          <input id="jsonFile" type="file" accept="application/json" hidden>
+        </div>
+      </div>
+    </aside>
+
+    <main class="stageWrap">
+      <div id="stage" aria-label="crachá">
+        <div id="bgImg" class="badgeBgImage" style="display:none"></div>
+        <div id="borderDiv" class="badgeBorder" style="display:none"></div>
+        <!-- elementos (.item) são adicionados aqui -->
+      </div>
+    </main>
+  </div>
+
+<script>
+/* ---------------- Refs ---------------- */
+const els = {
+  stage: document.getElementById('stage'),
+  bgImg: document.getElementById('bgImg'),
+  borderDiv: document.getElementById('borderDiv'),
+  w: document.getElementById('badgeW'),
+  h: document.getElementById('badgeH'),
+  dpi: document.getElementById('dpi'),
+  scale: document.getElementById('previewScale'),
+  btnAddText: document.getElementById('btnAddText'),
+  btnAddImage: document.getElementById('btnAddImage'),
+  imageInput: document.getElementById('imageInput'),
+  btnCenterH: document.getElementById('btnCenterH'),
+  btnCenterV: document.getElementById('btnCenterV'),
+  btnDelete: document.getElementById('btnDelete'),
+  btnReset: document.getElementById('btnReset'),
+  bgType: document.getElementById('bgType'),
+  bgColor: document.getElementById('bgColor'),
+  bgGrad1: document.getElementById('bgGrad1'),
+  bgGrad2: document.getElementById('bgGrad2'),
+  bgGradDir: document.getElementById('bgGradDir'),
+  bgSolidBox: document.getElementById('bgSolidBox'),
+  bgGradientBox: document.getElementById('bgGradientBox'),
+  bgImageBox: document.getElementById('bgImageBox'),
+  bgImage: document.getElementById('bgImage'),
+
+  // border
+  borderEnable: document.getElementById('borderEnable'),
+  borderCol: document.getElementById('borderCol'),
+  borderWidth: document.getElementById('borderWidth'),
+  borderRadius: document.getElementById('borderRadius'),
+
+  // props
+  propType: document.getElementById('propType'),
+  propText: document.getElementById('propText'),
+  propFontSize: document.getElementById('propFontSize'),
+  propColor: document.getElementById('propColor'),
+  propWeight: document.getElementById('propWeight'),
+  propFont: document.getElementById('propFont'),
+  propW: document.getElementById('propW'),
+  propH: document.getElementById('propH'),
+  propX: document.getElementById('propX'),
+  propY: document.getElementById('propY'),
+
+  // pdf
+  namesList: document.getElementById('namesList'),
+  pdfMargin: document.getElementById('pdfMargin'),
+  pdfGap: document.getElementById('pdfGap'),
+  pdfOrient: document.getElementById('pdfOrient'),
+  btnGeneratePDF: document.getElementById('btnGeneratePDF'),
+
+  // save/load
+  btnSave: document.getElementById('btnSave'),
+  btnLoad: document.getElementById('btnLoad'),
+  btnExport: document.getElementById('btnExport'),
+  btnImport: document.getElementById('btnImport'),
+  jsonFile: document.getElementById('jsonFile'),
+};
+
+const STORAGE_KEY = 'badge_editor_v8';
+let selectedId = null;
+let counter = 0;
+
+/* ---------- util ---------- */
+function cmToPx(cm, dpi){ return Math.round((cm/2.54)*dpi); }
+function fixHex(hex){ if(!hex) return '#000000'; if(/^#([0-9A-Fa-f]{3})$/.test(hex)){ return '#' + hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3]; } if(/^#[0-9A-Fa-f]{6}$/.test(hex)) return hex; return '#000000'; }
+function newId(prefix){ counter+=1; return prefix+counter; }
+
+/* ---------- layout (relayout + border update) ---------- */
+function relayout(){
+  const dpi = parseInt(els.dpi.value)||150;
+  const wpx = cmToPx(parseFloat(els.w.value)||10, dpi);
+  const hpx = cmToPx(parseFloat(els.h.value)||7, dpi);
+  els.stage.style.width = wpx + 'px';
+  els.stage.style.height = hpx + 'px';
+  const scale = parseFloat(els.scale.value)||1;
+  els.stage.style.transform = `scale(${scale})`;
+  els.stage.style.transformOrigin = 'top left';
+
+  // ensure borderDiv matches stage (borderDiv uses inset:0 so it fits)
+  updateBorderUI();
+}
+
+/* ---------- selection / props ---------- */
+function deselectAll(){ Array.from(els.stage.querySelectorAll('.item')).forEach(n=>n.classList.remove('selected')); selectedId = null; updatePropPanel(); }
+function select(id){ deselectAll(); selectedId = id; const node = document.getElementById(id); if(node) node.classList.add('selected'); updatePropPanel(); }
+function getSelected(){ return selectedId ? document.getElementById(selectedId) : null; }
+
+/* ---------- creation ---------- */
+function addText(){
+  const id = newId('text_');
+  const node = document.createElement('div');
+  node.id = id; node.className = 'item text';
+  node.style.left = '40px'; node.style.top = '40px'; node.style.width = '280px'; node.style.height = '80px';
+  node.innerHTML = `<span style="font:700 28px Roboto, sans-serif; color:#000000;">Seu Texto {{NAME}}</span>`;
+  node.dataset.type = 'text';
+  node.dataset.font = 'Roboto, sans-serif';
+  node.dataset.weight = '700';
+  node.dataset.size = '28';
+  node.dataset.color = '#000000';
+  node.dataset.text = 'Seu Texto {{NAME}}';
+  // borda por item (mantemos, mas você pediu borda do crachá; mantemos compatibilidade)
+  node.dataset.borderEnabled = 'false';
+  node.dataset.borderColor = '#000000';
+  node.dataset.borderWidth = '0';
+  els.stage.appendChild(node);
+  makeInteractive(node);
+  select(id);
+  save();
+}
+
+function addImageFromDataURL(url){
+  const id = newId('img_');
+  const node = document.createElement('div');
+  node.id = id; node.className = 'item image';
+  node.style.left = '60px'; node.style.top = '60px'; node.style.width='260px'; node.style.height='160px';
+  node.dataset.type='image';
+  node.dataset.src = url;
+  node.innerHTML = `<img src="${url}" alt="imagem" draggable="false" />`;
+  // borda per-item fields
+  node.dataset.borderEnabled = 'false';
+  node.dataset.borderColor = '#000000';
+  node.dataset.borderWidth = '0';
+  els.stage.appendChild(node);
+  makeInteractive(node);
+  select(id);
+  save();
+}
+
+/* ---------- interactive (drag/resize) ---------- */
+function makeInteractive(node){
+  node.addEventListener('mousedown', (e)=>{ e.stopPropagation(); select(node.id); });
+  interact(node)
+    .draggable({ listeners: { move (event){ const x = (parseFloat(node.style.left)||0) + event.dx; const y = (parseFloat(node.style.top)||0) + event.dy; node.style.left = x+'px'; node.style.top = y+'px'; updatePropInputsFromNode(node); save(); } }})
+    .resizable({ edges: { left:true, right:true, bottom:true, top:true }, listeners: { move(event){ const { x, y } = event.rect; node.style.width = Math.round(event.rect.width) + 'px'; node.style.height = Math.round(event.rect.height) + 'px'; node.style.left = x + 'px'; node.style.top = y + 'px'; updatePropInputsFromNode(node); save(); } }});
+}
+
+/* ---------- UI events ---------- */
+els.stage.addEventListener('mousedown', (e)=>{ if(e.target === els.stage || e.target === els.bgImg || e.target === els.borderDiv) deselectAll(); });
+els.btnAddText.addEventListener('click', addText);
+els.btnAddImage.addEventListener('click', ()=> els.imageInput.click());
+els.imageInput.addEventListener('change', async (ev)=>{ const f = ev.target.files[0]; if(!f) return; const data = await fToDataURL(f); addImageFromDataURL(data); ev.target.value=''; });
+
+document.getElementById('btnCenterH').addEventListener('click', ()=>{ const n=getSelected(); if(!n) return; const stageW = els.stage.clientWidth; const rect = n.getBoundingClientRect(); const w = rect.width; n.style.left = Math.round((stageW - w)/2) + 'px'; updatePropInputsFromNode(n); save(); });
+document.getElementById('btnCenterV').addEventListener('click', ()=>{ const n=getSelected(); if(!n) return; const stageH = els.stage.clientHeight; const rect = n.getBoundingClientRect(); const h = rect.height; n.style.top = Math.round((stageH - h)/2) + 'px'; updatePropInputsFromNode(n); save(); });
+
+document.getElementById('btnDelete').addEventListener('click', ()=>{ const n=getSelected(); if(!n) return; n.remove(); deselectAll(); save(); });
+document.getElementById('btnReset').addEventListener('click', ()=>{ if(confirm('Limpar todo o crachá?')){ els.stage.querySelectorAll('.item').forEach(n=>n.remove()); deselectAll(); save(); } });
+
+/* ---------- background ---------- */
+function updateBgUI(){
+  const t = els.bgType.value;
+  els.bgSolidBox.style.display = (t==='solid')?'grid':'none';
+  els.bgGradientBox.style.display = (t==='gradient')?'grid':'none';
+  els.bgImageBox.style.display = (t==='image')?'block':'none';
+  applyBackground();
+}
+els.bgType.addEventListener('change', updateBgUI);
+[els.bgColor, els.bgGrad1, els.bgGrad2, els.bgGradDir].forEach(i=> i.addEventListener('input', ()=>{ applyBackground(); save(); }));
+els.bgImage.addEventListener('change', async (ev)=>{ const f=ev.target.files[0]; if(!f) return; const data = await fToDataURL(f); els.bgImg.style.backgroundImage = `url(${data})`; els.bgImg.style.display = 'block'; save(); });
+
+function applyBackground(){
+  const t = els.bgType.value;
+  els.bgImg.style.display = 'none';
+  if(t==='none'){
+    els.stage.style.background = 'transparent';
+  } else if(t==='solid'){
+    els.stage.style.background = fixHex(els.bgColor.value);
+  } else if(t==='gradient'){
+    const c1 = fixHex(els.bgGrad1.value); const c2 = fixHex(els.bgGrad2.value);
+    const dir = els.bgGradDir.value; let cssDir = 'to bottom';
+    if(dir==='bt') cssDir = 'to top';
+    if(dir==='lr') cssDir = 'to right';
+    if(dir==='rl') cssDir = 'to left';
+    els.stage.style.background = `linear-gradient(${cssDir}, ${c1}, ${c2})`;
+  } else if(t==='image'){
+    els.stage.style.background = '#ffffff';
+    els.bgImg.style.display = 'block';
+    els.bgImg.style.backgroundSize = 'cover';
+    els.bgImg.style.backgroundPosition = 'center';
+  }
+}
+
+/* ---------- props panel ---------- */
+function updatePropInputsFromNode(n){
+  if(!n){ els.propType.value='—'; document.getElementById('textProps').style.display='none'; return; }
+  els.propType.value = n.dataset.type || '—';
+  els.propW.value = Math.round(n.getBoundingClientRect().width);
+  els.propH.value = Math.round(n.getBoundingClientRect().height);
+  els.propX.value = parseInt(n.style.left)||0; els.propY.value = parseInt(n.style.top)||0;
+  if(n.dataset.type==='text'){
+    document.getElementById('textProps').style.display='grid';
+    els.propText.value = n.dataset.text || n.innerText || '';
+    els.propFontSize.value = parseInt(n.dataset.size)||28;
+    els.propColor.value = fixHex(n.dataset.color||'#000000');
+    els.propWeight.value = n.dataset.weight||'700';
+    els.propFont.value = n.dataset.font||'Roboto, sans-serif';
+  } else {
+    document.getElementById('textProps').style.display='none';
+  }
+}
+
+function updatePropPanel(){ updatePropInputsFromNode( getSelected() ); }
+
+/* ---------- props bindings ---------- */
+els.propText.addEventListener('input', ()=>{ const n=getSelected(); if(!n) return; n.dataset.text = els.propText.value; const span = n.querySelector('span'); if(span){ span.textContent = els.propText.value; } save(); });
+els.propFontSize.addEventListener('input', ()=>{ const n=getSelected(); if(!n) return; n.dataset.size = parseInt(els.propFontSize.value)||28; const span = n.querySelector('span'); if(span){ span.style.fontSize = n.dataset.size + 'px'; } save(); });
+els.propColor.addEventListener('input', ()=>{ const n=getSelected(); if(!n) return; n.dataset.color = fixHex(els.propColor.value); const span = n.querySelector('span'); if(span){ span.style.color = n.dataset.color; } save(); });
+els.propWeight.addEventListener('change', ()=>{ const n=getSelected(); if(!n) return; n.dataset.weight = els.propWeight.value; const span = n.querySelector('span'); if(span){ span.style.fontWeight = n.dataset.weight; span.style.font = `${n.dataset.weight} ${n.dataset.size}px ${n.dataset.font}`; } save(); });
+els.propFont.addEventListener('change', ()=>{ const n=getSelected(); if(!n) return; n.dataset.font = els.propFont.value; const span = n.querySelector('span'); if(span){ span.style.fontFamily = n.dataset.font; span.style.font = `${n.dataset.weight} ${n.dataset.size}px ${n.dataset.font}`; } save(); });
+
+['propW','propH','propX','propY'].forEach(id=>{ els[id].addEventListener('input', ()=>{ const n=getSelected(); if(!n) return; if(id==='propW') n.style.width = parseInt(els[id].value||0)+'px'; if(id==='propH') n.style.height = parseInt(els[id].value||0)+'px'; if(id==='propX') n.style.left = parseInt(els[id].value||0)+'px'; if(id==='propY') n.style.top = parseInt(els[id].value||0)+'px'; save(); }); });
+
+/* ---------- border UI (CRACHÁ border inside) ---------- */
+function updateBorderUI(){
+  // borderDiv covers whole stage and uses box-sizing:border-box; border drawn inside
+  const enabled = !!els.borderEnable.checked;
+  if(!enabled){ els.borderDiv.style.display = 'none'; return; }
+  els.borderDiv.style.display = 'block';
+  const bw = Math.max(0, parseInt(els.borderWidth.value||0));
+  const br = Math.max(0, parseInt(els.borderRadius.value||0));
+  const col = fixHex(els.borderCol.value||'#000000');
+  // set border style (included inside because of box-sizing)
+  els.borderDiv.style.border = bw + 'px solid ' + col;
+  els.borderDiv.style.borderRadius = br + 'px';
+  // ensure bgImg z-order is behind border; items are above border via z-index
+}
+[els.borderEnable, els.borderCol, els.borderWidth, els.borderRadius].forEach(i=> i.addEventListener('input', ()=>{ updateBorderUI(); save(); }));
+
+/* ---------- save / load (serialize includes border config) ---------- */
+function serialize(){
+  const items = Array.from(els.stage.querySelectorAll('.item')).map(n=>{
+    if(n.dataset.type==='text'){
+      return { id:n.id, type:'text', x:parseInt(n.style.left)||0, y:parseInt(n.style.top)||0, w:Math.round(n.getBoundingClientRect().width), h:Math.round(n.getBoundingClientRect().height), text:n.dataset.text||'', font:n.dataset.font||'', size:n.dataset.size||'', weight:n.dataset.weight||'', color:n.dataset.color||'', borderEnabled:n.dataset.borderEnabled||'false', borderColor:n.dataset.borderColor||'#000000', borderWidth:n.dataset.borderWidth||'0' };
+    } else {
+      const img = n.querySelector('img');
+      return { id:n.id, type:'image', x:parseInt(n.style.left)||0, y:parseInt(n.style.top)||0, w:Math.round(n.getBoundingClientRect().width), h:Math.round(n.getBoundingClientRect().height), src:n.dataset.src||(img?img.src:''), borderEnabled:n.dataset.borderEnabled||'false', borderColor:n.dataset.borderColor||'#000000', borderWidth:n.dataset.borderWidth||'0' };
+    }
+  });
+
+  // background config
+  const bg = { type: els.bgType.value, color: els.bgColor.value, grad1: els.bgGrad1.value, grad2: els.bgGrad2.value, dir: els.bgGradDir.value, img: els.bgImg.style.backgroundImage || '' };
+
+  // border (crachá) config
+  const crachaBorder = { enabled: !!els.borderEnable.checked, color: els.borderCol.value, width: parseInt(els.borderWidth.value||0), radius: parseInt(els.borderRadius.value||0) };
+
+  return { w: els.w.value, h: els.h.value, dpi: els.dpi.value, bg, crachaBorder, items };
+}
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize())); }
+
+function load(fromLocal=true, obj=null){
+  let data = null;
+  if(fromLocal){ const raw = localStorage.getItem(STORAGE_KEY); if(raw) data = JSON.parse(raw); }
+  else data = obj;
+  if(!data) return;
+  els.w.value = data.w||10; els.h.value = data.h||7; els.dpi.value = data.dpi||150; relayout();
+  // bg
+  els.bgType.value = (data.bg&&data.bg.type)||'solid';
+  els.bgColor.value = (data.bg&&data.bg.color)||'#ffffff';
+  els.bgGrad1.value = (data.bg&&data.bg.grad1)||'#3b82f6';
+  els.bgGrad2.value = (data.bg&&data.bg.grad2)||'#06b6d4';
+  els.bgGradDir.value = (data.bg&&data.bg.dir)||'tb';
+  updateBgUI();
+  if(data.bg && data.bg.img){ const urlMatch = data.bg.img.match(/url\("?(.*)"?\)/); if(urlMatch){ els.bgImg.style.backgroundImage = `url(${urlMatch[1]})`; els.bgImg.style.display='block'; }}
+
+  // crachá border
+  if(data.crachaBorder){
+    els.borderEnable.checked = !!data.crachaBorder.enabled;
+    els.borderCol.value = data.crachaBorder.color || els.borderCol.value;
+    els.borderWidth.value = data.crachaBorder.width || els.borderWidth.value;
+    els.borderRadius.value = data.crachaBorder.radius || els.borderRadius.value;
+  } else {
+    els.borderEnable.checked = false;
+  }
+  updateBorderUI();
+
+  // items
+  els.stage.querySelectorAll('.item').forEach(n=>n.remove());
+  (data.items||[]).forEach(it=>{
+    if(it.type==='text'){
+      const id = it.id || newId('text_');
+      const node = document.createElement('div'); node.id=id; node.className='item text';
+      node.style.left = it.x+'px'; node.style.top = it.y+'px'; node.style.width = it.w+'px'; node.style.height = it.h+'px';
+      node.dataset.type='text'; node.dataset.text = it.text||''; node.dataset.font = it.font||'Roboto, sans-serif';
+      node.dataset.size = it.size||'28'; node.dataset.weight = it.weight||'700'; node.dataset.color = fixHex(it.color||'#000000');
+      node.dataset.borderEnabled = it.borderEnabled||'false'; node.dataset.borderColor = it.borderColor||'#000000'; node.dataset.borderWidth = it.borderWidth||'0';
+      node.innerHTML = `<span style="font:${node.dataset.weight} ${node.dataset.size}px ${node.dataset.font}; color:${node.dataset.color}">${it.text}</span>`;
+      // if per-item border enabled, apply
+      if(node.dataset.borderEnabled === 'true'){ node.style.border = (node.dataset.borderWidth||'1') + 'px solid ' + node.dataset.borderColor; boxSizingSafe(node); }
+      els.stage.appendChild(node); makeInteractive(node);
+    } else if(it.type==='image'){
+      const id = it.id || newId('img_');
+      const node = document.createElement('div'); node.id=id; node.className='item image';
+      node.style.left = it.x+'px'; node.style.top = it.y+'px'; node.style.width = it.w+'px'; node.style.height = it.h+'px';
+      node.dataset.type='image'; node.dataset.src = it.src||'';
+      node.dataset.borderEnabled = it.borderEnabled||'false'; node.dataset.borderColor = it.borderColor||'#000000'; node.dataset.borderWidth = it.borderWidth||'0';
+      node.innerHTML = `<img src="${it.src}" alt="imagem" draggable="false" />`;
+      if(node.dataset.borderEnabled === 'true'){ node.style.border = (node.dataset.borderWidth||'1') + 'px solid ' + node.dataset.borderColor; boxSizingSafe(node); }
+      els.stage.appendChild(node); makeInteractive(node);
+    }
+  });
+  deselectAll();
+}
+
+/* small helper to enforce border-box for items that get borders */
+function boxSizingSafe(node){ node.style.boxSizing = 'border-box'; }
+
+/* ---------- export / import ---------- */
+els.btnSave.addEventListener('click', ()=>{ save(); alert('Configuração salva neste navegador.'); });
+els.btnLoad.addEventListener('click', ()=> load(true));
+els.btnExport.addEventListener('click', ()=>{ const blob = new Blob([JSON.stringify(serialize(), null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='badge_layout.json'; a.click(); URL.revokeObjectURL(url); });
+
+/* Import JSON file chooser */
+els.btnImport.addEventListener('click', ()=> els.jsonFile.click());
+els.jsonFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const txt = await f.text();
+  try {
+    const obj = JSON.parse(txt);
+    load(false, obj);
+    alert('Layout importado com sucesso.');
+  } catch(e){
+    alert('JSON inválido: ' + e.message);
+  }
+});
+
+/* ---------- helper: file -> dataURL ---------- */
+function fToDataURL(file){ return new Promise((res, rej)=>{ const r=new FileReader(); r.onload = ()=> res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+
+/* ---------- PDF: captura com html2canvas (alta escala) ---------- */
+els.btnGeneratePDF.addEventListener('click', async ()=>{
+  const namesRaw = els.namesList.value.trim();
+  const names = namesRaw ? namesRaw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean) : [''];
+  const { jsPDF } = window.jspdf;
+  const orientation = els.pdfOrient.value;
+  const doc = new jsPDF({ unit:'cm', format:'a4', orientation });
+  const a4w = doc.internal.pageSize.getWidth();
+  const a4h = doc.internal.pageSize.getHeight();
+  const margin = parseFloat(els.pdfMargin.value)||0.5;
+  const gap = parseFloat(els.pdfGap.value)||0.5;
+  const bw = parseFloat(els.w.value)||10; // cm
+  const bh = parseFloat(els.h.value)||7;  // cm
+
+  // grid fit
+  const cols = Math.max(1, Math.floor((a4w - 2*margin + gap) / (bw + gap)));
+  const rows = Math.max(1, Math.floor((a4h - 2*margin + gap) / (bh + gap)));
+  const perPage = cols * rows;
+
+  // collect text items originals for replacement
+  const textItems = Array.from(els.stage.querySelectorAll('.item.text'));
+  const originals = textItems.map(n => n.dataset.text || n.querySelector('span')?.textContent || '');
+
+  // scale html2canvas based on DPI
+  const scale = Math.max(1, Math.round((parseInt(els.dpi.value||150))/96));
+
+  for(let i=0;i<names.length;i++){
+    const name = names[i];
+    // apply replacement into stage
+    textItems.forEach((n, idx)=>{
+      const tpl = originals[idx] || '';
+      if(tpl.includes('{{NAME}}')){
+        const txt = tpl.replace(/\{\{NAME\}\}/g, name);
+        n.dataset.text = txt;
+        const sp = n.querySelector('span'); if(sp) sp.textContent = txt;
+      }
+    });
+
+    // force reflow (optional)
+    // capture
+    const canvasCapture = await html2canvas(els.stage, { scale, backgroundColor: null, useCORS: true });
+    const dataUrl = canvasCapture.toDataURL('image/png');
+
+    // restore originals
+    textItems.forEach((n, idx)=>{ n.dataset.text = originals[idx]; const sp = n.querySelector('span'); if(sp) sp.textContent = originals[idx]; });
+
+    const pageIndex = Math.floor(i / perPage);
+    const indexOnPage = i % perPage;
+    if(i>0 && indexOnPage===0) doc.addPage();
+    const col = indexOnPage % cols;
+    const row = Math.floor(indexOnPage / cols);
+    const x = margin + col * (bw + gap);
+    const y = margin + row * (bh + gap);
+    doc.addImage(dataUrl, 'PNG', x, y, bw, bh);
+  }
+
+  doc.save('crachas_a4.pdf');
+});
+
+/* ---------- keyboard shortcuts ---------- */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Delete'){ const n = getSelected(); if(n){ n.remove(); deselectAll(); save(); } }
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='d'){ e.preventDefault(); const n=getSelected(); if(!n) return; const clone = n.cloneNode(true); clone.id = newId((n.dataset.type==='text'?'text_':'img_')); clone.style.left = (parseInt(n.style.left||0)+10)+'px'; clone.style.top = (parseInt(n.style.top||0)+10)+'px'; els.stage.appendChild(clone); makeInteractive(clone); select(clone.id); save(); }
+});
+
+/* ---------- respond to inputs: relayout/save ---------- */
+['badgeW','badgeH','dpi','previewScale'].forEach(id=> document.getElementById(id).addEventListener('change', ()=>{ relayout(); save(); }));
+[els.bgType, els.bgColor, els.bgGrad1, els.bgGrad2, els.bgGradDir].forEach(i => i.addEventListener('input', ()=>{ updateBgUI(); save(); }));
+
+/* ensure stage has box-sizing border-box so borderDiv draws inside bounds */
+els.stage.style.boxSizing = 'content-box';
+els.borderDiv.style.boxSizing = 'border-box';
+
+/* ---------- init ---------- */
+relayout();
+load(true);
+updateBgUI();
+updateBorderUI();
+
+/* if user resizes window, keep preview scaled visually */
+window.addEventListener('resize', ()=> relayout());
+
+/* end of script */
+</script>
+</body>
+</html>
+
