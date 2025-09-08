@@ -10,6 +10,12 @@ Pages](https://wsdney.github.io/skekinahgeradordecrachas/)
 
 ------------------------------------------------------------------------
 
+## 📜 Licença  
+Este projeto está licenciado sob a **MIT License** - veja o arquivo
+[LICENSE](LICENSE) para mais detalhes.
+
+------------------------------------------------------------------------
+
 ## 🚀 Recursos
 
 -   Adicionar **textos** livres com manipulação (mover, redimensionar,
