@@ -1,98 +1,53 @@
-# 🎟️ Gerador de Crachás Personalizados
+Shekinah — Sistema de Gestão de Eventos e Crachás
+O Shekinah é uma aplicação web de página única (SPA) projetada para simplificar a logística de eventos. Ele permite a distribuição automatizada de participantes em salas coloridas, o gerenciamento de responsáveis (obreiras) e a criação de crachás personalizados através de um editor visual intuitivo.
 
-Um sistema web simples e flexível para criar crachás de eventos de forma
-rápida.\
-Permite personalizar fundo, textos, imagens, bordas, e gerar crachás
-automaticamente a partir de uma lista de nomes.
+🚀 Funcionalidades Principais
+1. Logística de Salas & Cores
+Distribuição Inteligente: Importe sua lista de nomes e distribua-os automaticamente com base na capacidade por sala ou quantidade total de salas.
 
-👉 [Acesse aqui no GitHub
-Pages](https://wsdney.github.io/skekinahgeradordecrachas/)
+Interface Drag & Drop: Reorganize os participantes entre as salas arrastando os nomes diretamente na interface.
 
-------------------------------------------------------------------------
+Gestão Cromática: Cada sala possui uma paleta de cores dedicada. A cor escolhida reflete automaticamente nos cards, nos gabaritos de porta e nas molduras dos crachás.
 
-## 📜 Licença  
-Este projeto está licenciado sob a **MIT License** - veja o arquivo
-[LICENSE](LICENSE) para mais detalhes.
+Gabarito de Porta (Paisagem): Geração de relatório PDF em formato A4 Paisagem, com cabeçalhos coloridos de alto contraste e listas numeradas para check-in.
 
-------------------------------------------------------------------------
+2. Editor de Crachás (Design)
+Editor Visual: Adicione textos e imagens (logotipos) com total liberdade de posicionamento e redimensionamento.
 
-## 🚀 Recursos
+Tags Dinâmicas: Utilize {{NOME}} e {{SALA}} no design para que o sistema gere crachás individuais personalizados para cada participante.
 
--   Adicionar **textos** livres com manipulação (mover, redimensionar,
-    girar, mudar fonte, cor e tamanho).\
--   Inserir **imagens** e posicionar livremente dentro do crachá.\
--   Definir **dimensões do crachá** (largura e altura).\
--   Alterar **cor de fundo** ou aplicar **gradiente**.\
--   Ativar/Desativar **borda do crachá**, escolhendo **espessura e
-    cor**.\
--   Criar crachás automaticamente para uma lista de nomes.\
--   **Gerar PDF** pronto para impressão, ocupando várias páginas se
-    necessário.\
--   Salvar e carregar **configurações** em arquivos `.json` (facilita
-    reutilizar layouts para eventos futuros).
+Precisão Milimétrica: Defina o tamanho do crachá em centímetros e ajuste posições (X/Y) e dimensões (W/H) via painel de propriedades.
 
-------------------------------------------------------------------------
+Geração de PDF em Grade: Exporta todos os crachás organizados automaticamente em folhas A4, prontos para impressão, respeitando a cor da moldura de cada sala.
 
-## 🖊️ Como usar
+3. Persistência de Dados
+Exportação/Importação JSON: Salve o progresso completo do seu projeto (nomes, salas, cores e design visual) em um único arquivo.
 
-### Criar o layout do crachá
+Imagens Embutidas: As imagens carregadas no design são convertidas para Base64 e salvas dentro do arquivo JSON, eliminando a necessidade de arquivos externos.
 
-1.  Defina as dimensões do crachá (ex.: `10x7 cm` ou `10x14 cm`).\
-2.  Escolha **fundo sólido** ou **gradiente**.\
-3.  Clique em **➕ Texto** ou **➕ Imagem** para adicionar elementos.
-    -   Arraste, redimensione e personalize livremente.\
-4.  Se desejar, ative a **borda**, escolha cor e espessura.
+🛠️ Tecnologias Utilizadas
+Frontend: HTML5, CSS3 (Modern UI com Dark Mode) e JavaScript Puro (Vanilla JS).
 
-------------------------------------------------------------------------
+Interatividade: Interact.js para manipulação de elementos.
 
-### Inserir nomes automaticamente nos crachás
+PDF Engine: jsPDF para geração de documentos.
 
-1.  Clique em **➕ Texto**.\
+Captura Visual: html2canvas para renderização do palco de design.
 
-2.  Um texto genérico aparecerá:
+Tipografia: Google Fonts (Roboto, Pacifico, Dancing Script).
 
-        Seu Texto {{NAME}}
+📂 Como Usar
+Faça o download do arquivo .html.
 
-3.  Clique e edite, deixando somente:
+Abra-o em qualquer navegador moderno (Chrome, Edge ou Firefox).
 
-        {{NAME}}
+Na aba Salas & Cores, cole a lista de participantes e gere a logística.
 
-4.  Posicione o `{{NAME}}` onde deseja que o nome apareça.\
+Na aba Design, monte o layout do seu crachá.
 
-5.  Na caixa **Lista de nomes**, insira um nome por linha:
+Use os botões de Exportar JSON para criar backups do seu trabalho.
 
-        Maria Silva
-        João Pereira
-        Ana Souza
+📄 Licença
+Este projeto foi desenvolvido para gestão interna e organização de eventos. Sinta-se livre para adaptar e melhorar o código conforme sua necessidade.
 
-6.  Configure margens, espaçamento e orientação (paisagem ou retrato).\
-
-7.  Clique em **Gerar PDF**.
-
-    -   O sistema substituirá `{{NAME}}` por cada nome.\
-    -   O PDF conterá um crachá para cada nome da lista.
-
-------------------------------------------------------------------------
-
-### Salvar e carregar configurações
-
--   Clique em **Salvar Configuração** → gera um arquivo `.json`.\
--   Para reutilizar, clique em **Carregar Configuração** e selecione o
-    `.json`.\
--   Isso permite ter **modelos prontos para cada evento**.
-
-------------------------------------------------------------------------
-
-## 🖨️ Gerar PDF
-
--   O PDF é gerado com base no layout definido.\
--   O sistema ajusta os crachás para caber na folha A4.\
--   Se os crachás não couberem em uma página, o sistema cria várias
-    páginas automaticamente.
-
-------------------------------------------------------------------------
-
-## 🛠️ Tecnologias utilizadas
-
--   **HTML + CSS (Tailwind)**\
--   **JavaScript (Fabric.js, jsPDF, FileSaver.js)**
+Desenvolvido com foco em agilidade e precisão visual.
