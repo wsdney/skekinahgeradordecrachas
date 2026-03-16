@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Shekinah v16.5 — Com Nº Inscrição</title>
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --panel-bg: #0f172a; --panel-fg: #e5e7eb; --muted: #94a3b8; --accent: #22d3ee;
+      --btn: #3b82f6; --btn2: #10b981; --danger: #ef4444; --surface: #0b1220;
+      --card: #111827; --border: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; background: var(--surface); color: var(--panel-fg); font-family: Roboto, sans-serif; }
+    .main-header { background: var(--panel-bg); padding: 10px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; height: 60px; }
+    .tabs { display: flex; gap: 10px; }
+    .tab-btn { background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; cursor: pointer; border: none; font-weight: bold; }
+    .tab-btn.active { background: var(--btn); color: white; }
+
+    .wrap { display: grid; grid-template-columns: 360px 1fr; gap: 16px; padding: 16px; height: calc(100vh - 60px); box-sizing: border-box; }
+    .panel { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; overflow-y: auto; height: 100%; }
+    
+    .room-manager { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 10px; overflow-y: auto; height: 100%; align-content: start; }
+    .room-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; min-height: 250px; display: flex; flex-direction: column; border-top: 10px solid #000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .room-title { font-weight: bold; font-size: 16px; color: #fff; margin-bottom: 5px; display: block; }
+    .room-obreiras-input { width: 100%; padding: 8px; background: #1e293b; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; margin: 8px 0; font-size: 12px; }
+    
+    .color-palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
+    .color-swatch { width: 100%; aspect-ratio: 1/1; min-height: 32px; border-radius: 6px; cursor: pointer; border: 2px solid rgba(255,255,255,0.15); }
+    .drop-zone { flex-grow: 1; min-height: 80px; display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .person-tag { background: #1e293b; border: 1px solid var(--border); padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #e2e8f0; cursor: grab; }
+
+    .stageOuter { background: #111827; border: 1px solid var(--border); border-radius: 12px; display: flex; justify-content: center; align-items: center; overflow: auto; height: 100%; position: relative; }
+    #stage { position: relative; background: #fff; border: 4px solid #000; overflow: hidden; flex-shrink: 0; z-index: 1; }
+    .item { position: absolute; box-sizing: border-box; display: flex; align-items: center; justify-content: center; cursor: move; z-index: 10; }
+    .item.selected { outline: 3px solid var(--accent); z-index: 100; }
+    .item.text span { display: block; width: 100%; height: auto; pointer-events: none; word-wrap: break-word; line-height: 1.2; text-align: center; }
+
+    label { display: block; margin-top: 12px; font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold; }
+    input, textarea, select { width: 100%; padding: 8px; background: var(--card); color: #fff; border: 1px solid var(--border); border-radius: 8px; margin-top: 4px; font-size: 12px; }
+    .btn { cursor: pointer; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--btn); color: white; font-weight: 600; margin-top: 8px; font-size: 12px; }
+    .btn.secondary { background: var(--btn2); }
+    .btn.danger { background: var(--danger); }
+    .hidden { display: none !important; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    #dormTemplate { background: white; color: black; padding: 1.2cm; width: 29.7cm; min-height: 21cm; font-family: sans-serif; position: absolute; left: -5000px; }
+    .dorm-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .dorm-table th, .dorm-table td { border: 1.5px solid black; padding: 10px; text-align: left; font-size: 14px; }
+    .dorm-colored-header { color: #000; padding: 18px; font-weight: bold; font-size: 26px; text-align: center; text-transform: uppercase; margin-top: 8px; border: 2px solid black; }
+  </style>
+</head>
+<body>
+
+<header class="main-header">
+  <div style="font-weight: bold; font-size: 1.2rem; color: #fff;">Shekinah v16.5 — Nº Inscrição</div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tabRooms" onclick="switchTab('rooms')">1. Salas & Cores</button>
+    <button class="tab-btn" id="tabEditor" onclick="switchTab('editor')">2. Design Crachá</button>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button class="btn" style="background:#475569; margin-top:0;" onclick="exportProject()">Exportar JSON</button>
+    <button class="btn" style="background:#475569; margin-top:0;" onclick="document.getElementById('importFile').click()">Importar JSON</button>
+    <input type="file" id="importFile" hidden accept=".json" onchange="importProject(this)">
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="panel">
+    <div id="roomTools">
+        <label>Participantes (cole a lista com números de inscrição)</label>
+        <textarea id="nameList" rows="8" placeholder="Exemplo:\n1 - Nome Completo\n45 - Outro Nome\n..."></textarea>
+        <label>Critério de Distribuição</label>
+        <select id="distributeCriteria" onchange="toggleCriteria()">
+            <option value="perRoom">Pessoas por Sala</option>
+            <option value="totalRooms">Quantidade de Salas</option>
+        </select>
+        <div id="boxPerRoom"><label>Qtd por Sala</label><input type="number" id="roomCapacity" value="7"></div>
+        <div id="boxTotalRooms" class="hidden"><label>Total de Salas</label><input type="number" id="totalRoomsTarget" value="7"></div>
+        <button class="btn secondary" style="width:100%" onclick="autoDistribute()">Gerar Salas</button>
+        
+        <div style="margin-top:20px; border-top: 1px solid var(--border); padding-top:15px;">
+            <label>Gabarito de Dormitório</label>
+            <button class="btn" style="background:#8b5cf6; width:100%;" onclick="generateDormLists()">GERAR LISTAS EM PAISAGEM</button>
+        </div>
+
+        <div style="margin-top:20px; border-top: 1px solid var(--border); padding-top:15px;">
+            <label>Listas Gerais de Participantes (PDF)</label>
+            <div class="grid2" style="margin: 10px 0;">
+                <button class="btn" style="background:#7c3aed;" onclick="generateParticipantList('numeric')">NUMÉRICA (por inscrição)</button>
+                <button class="btn" style="background:#ec4899;" onclick="generateParticipantList('alpha')">ALFABÉTICA</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editorTools" class="hidden">
+      <div class="grid2">
+        <div><label>Largura (cm)</label><input id="badgeW" type="number" value="10" oninput="relayout()"></div>
+        <div><label>Altura (cm)</label><input id="badgeH" type="number" value="7" oninput="relayout()"></div>
+      </div>
+      <label>Moldura (cm)</label>
+      <input id="borderSize" type="number" value="0.4" step="0.05" oninput="relayout()">
+      <div class="grid2">
+        <button class="btn" onclick="addText()">+ Texto</button>
+        <button class="btn secondary" onclick="document.getElementById('imageInput').click()">+ Imagem</button>
+      </div>
+      <input id="imageInput" type="file" accept="image/*" hidden onchange="uploadImage(this)">
+
+      <div id="propPanel" class="hidden" style="margin-top:15px; border-top:2px solid var(--accent); padding-top:10px;">
+        <h4 style="margin:0; color:var(--accent); font-size:12px;">Propriedades</h4>
+        <div id="textFieldsOnly">
+            <label>Texto</label>
+            <textarea id="propText" oninput="updateItem()"></textarea>
+            <div class="grid2">
+                <div><label>Tamanho</label><input id="propFontSize" type="number" oninput="updateItem()"></div>
+                <div><label>Cor</label><input id="propColor" type="color" oninput="updateItem()"></div>
+            </div>
+            <label>Fonte</label>
+            <select id="propFont" onchange="updateItem()">
+                <option value="Roboto, sans-serif">Roboto</option>
+                <option value="'Pacifico', cursive">Pacifico</option>
+                <option value="'Dancing Script', cursive">Dancing</option>
+            </select>
+        </div>
+        <div class="grid2" style="margin-top:10px; background:rgba(255,255,255,0.05); padding:8px; border-radius:8px;">
+            <div><label>Largura (px)</label><input id="propW" type="number" oninput="updateItem()"></div>
+            <div><label>Altura (px)</label><input id="propH" type="number" oninput="updateItem()"></div>
+            <div><label>Afast. X (px)</label><input id="propX" type="number" oninput="updateItem()"></div>
+            <div><label>Afast. Y (px)</label><input id="propY" type="number" oninput="updateItem()"></div>
+        </div>
+        <div class="grid2">
+            <button class="btn" style="background:var(--border)" onclick="centerElement('h')">Centro H</button>
+            <button class="btn" style="background:var(--border)" onclick="centerElement('v')">Centro V</button>
+        </div>
+        <button class="btn danger" style="width:100%" onclick="deleteItem()">Remover</button>
+      </div>
+
+      <div style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px;">
+        <label>PDF Crachás</label>
+        <select id="pdfOrient"><option value="landscape">Paisagem</option><option value="portrait">Retrato</option></select>
+        <div class="grid2">
+            <div><label>Margem</label><input id="pdfMargin" type="number" value="0.5"></div>
+            <div><label>Corte</label><input id="pdfGap" type="number" value="0.5"></div>
+        </div>
+        <label>Cópias</label>
+        <input type="number" id="printCopies" value="4">
+        <button class="btn secondary" style="width:100%; height:45px; margin-top:10px;" onclick="generateFinalPDF()">GERAR PDF CRACHÁS</button>
+      </div>
+    </div>
+  </aside>
+
+  <main id="viewRooms" class="room-manager"></main>
+  <main id="viewEditor" class="stageOuter hidden" onclick="deselectAll(event)"><div id="stage"></div></main>
+</div>
+
+<div id="dormTemplate"></div>
+
+<script>
+  let people = []; 
+  let rooms = {}; 
+  let roomColors = {}; 
+  let roomObreiras = {};
+  const quickColors = ['#FFFF00', '#FF0000', '#0000FF', '#00FF00', '#FFA500', '#FF00FF', '#00FFFF', '#808080', '#000000', '#FFFFFF', '#800080', '#A52A2A'];
+
+  let selectedElement = null;
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+    document.getElementById('viewRooms').classList.toggle('hidden', tab !== 'rooms');
+    document.getElementById('viewEditor').classList.toggle('hidden', tab !== 'editor');
+    document.getElementById('roomTools').classList.toggle('hidden', tab !== 'rooms');
+    document.getElementById('editorTools').classList.toggle('hidden', tab !== 'editor');
+    if(tab === 'editor') relayout();
+  }
+
+  function toggleCriteria() {
+    const crit = document.getElementById('distributeCriteria').value;
+    document.getElementById('boxPerRoom').classList.toggle('hidden', crit !== 'perRoom');
+    document.getElementById('boxTotalRooms').classList.toggle('hidden', crit !== 'totalRooms');
+  }
+
+  function autoDistribute() {
+    const rawLines = document.getElementById('nameList').value.trim().split('\n').filter(line => line.trim() !== "");
+    const crit = document.getElementById('distributeCriteria').value;
+    people = []; rooms = {};
+
+    rawLines.forEach((line, idx) => {
+      let numero = null;
+      let nome = line.trim();
+
+      const match = nome.match(/^(\d+)[^\w]*([\s-–—.]*)(.*)$/);
+      if (match) {
+        numero = parseInt(match[1], 10);
+        nome = (match[3] || '').trim();
+      }
+
+      if (!nome) return;
+
+      let rName = "Sala " + String((crit === 'perRoom' ? Math.floor(idx / parseInt(document.getElementById('roomCapacity').value))+1 : (idx % parseInt(document.getElementById('totalRoomsTarget').value))+1)).padStart(2, '0');
+
+      const p = { 
+        id: 'p_'+idx+'_'+Date.now(), 
+        inscricao: numero !== null ? numero : '—',
+        nome: nome,
+        sala: rName 
+      };
+      people.push(p);
+
+      if(!rooms[rName]) { 
+        rooms[rName] = []; 
+        roomColors[rName] = quickColors[Object.keys(rooms).length % quickColors.length];
+        roomObreiras[rName] = ""; 
+      }
+      rooms[rName].push(p);
+    });
+
+    renderRooms();
+  }
+
+  function renderRooms() {
+    const container = document.getElementById('viewRooms'); container.innerHTML = '';
+    Object.keys(rooms).sort().forEach(rName => {
+      const div = document.createElement('div');
+      div.className = 'room-card'; div.dataset.room = rName; div.style.borderTopColor = roomColors[rName];
+      const palette = quickColors.map(c => `<div class="color-swatch" style="background:${c}" onclick="updateRoomColor('${rName}', '${c}')"></div>`).join('');
+      div.innerHTML = `
+        <div class="room-header">
+          <span class="room-title">${rName} (${rooms[rName].length})</span>
+          <input type="text" class="room-obreiras-input" placeholder="Obreiras..." value="${roomObreiras[rName]||''}" oninput="roomObreiras['${rName}']=this.value">
+          <div class="color-palette">${palette}</div>
+        </div>
+        <div class="drop-zone" ondragover="allowDrop(event)" ondrop="drop(event)" data-room="${rName}">
+          ${rooms[rName].map(p => `<div class="person-tag" draggable="true" ondragstart="drag(event)" id="${p.id}">${p.inscricao} - ${p.nome}</div>`).join('')}
+        </div>`;
+      container.appendChild(div);
+    });
+  }
+
+  function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+  function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.closest('.room-card').classList.add('drag-over'); }
+  function drop(ev) {
+    ev.preventDefault(); document.querySelectorAll('.room-card').forEach(c => c.classList.remove('drag-over'));
+    const id = ev.dataTransfer.getData("text"); const targetRoom = ev.currentTarget.dataset.room;
+    const person = people.find(p => p.id === id);
+    if(person && person.sala !== targetRoom) {
+        rooms[person.sala] = rooms[person.sala].filter(p => p.id !== id);
+        person.sala = targetRoom; rooms[targetRoom].push(person); renderRooms();
+    }
+  }
+
+  function updateRoomColor(r, c) { roomColors[r] = c; renderRooms(); }
+
+  async function generateParticipantList(mode = 'numeric') {
+    if (Object.keys(rooms).length === 0) return alert("Gere as salas primeiro.");
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'cm', format: 'a4', orientation: 'portrait' });
+    
+    let allParticipants = people.map(p => ({ ...p }));
+
+    if (mode === 'alpha') {
+      allParticipants.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' }));
+    } else {
+      allParticipants.sort((a, b) => {
+        const na = typeof a.inscricao === 'number' ? a.inscricao : 999999;
+        const nb = typeof b.inscricao === 'number' ? b.inscricao : 999999;
+        return na - nb;
+      });
+    }
+
+    const margin = 1.5;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const colWidths = [2.5, 9.0, 4.0, 3.0];
+    let y = margin;
+
+    const addHeader = () => {
+      doc.setFontSize(16);
+      doc.text(mode === 'alpha' ? "LISTA ALFABÉTICA" : "LISTA POR INSCRIÇÃO", pageWidth/2, y, { align: "center" });
+      y += 1.2;
+
+      doc.setFontSize(11);
+      doc.setFillColor(220, 220, 220);
+      doc.rect(margin, y, pageWidth - 2*margin, 1, "F");
+      
+      let x = margin;
+      doc.text("Inscrição", x + colWidths[0]/2, y + 0.7, { align: "center" });
+      x += colWidths[0];
+      doc.text("Nome Completo", x + colWidths[1]/2, y + 0.7, { align: "center" });
+      x += colWidths[1];
+      doc.text("Sala", x + colWidths[2]/2, y + 0.7, { align: "center" });
+      x += colWidths[2];
+      doc.text("Cor", x + colWidths[3]/2, y + 0.7, { align: "center" });
+      
+      y += 1.2;
+    };
+
+    addHeader();
+
+    doc.setFontSize(10);
+    
+    allParticipants.forEach(p => {
+      if (y > 26) {
+        doc.addPage();
+        y = margin;
+        addHeader();
+      }
+
+      let x = margin;
+      
+      doc.text(p.inscricao.toString(), x + colWidths[0]/2, y + 0.6, { align: "center" });
+      x += colWidths[0];
+      
+      doc.text(p.nome, x + 0.3, y + 0.6);
+      x += colWidths[1];
+      
+      doc.text(p.sala, x + colWidths[2]/2, y + 0.6, { align: "center" });
+      x += colWidths[2];
+      
+      // Apenas preenchimento da cor — SEM CONTORNO
+      doc.setFillColor(p.sala ? roomColors[p.sala] : '#ffffff');
+      doc.rect(x + 0.8, y + 0.15, 1.0, 0.7, "F");
+
+      y += 0.9;
+    });
+
+    doc.save(`Participantes_${mode === 'alpha' ? 'Alfabetica' : 'Por_Inscricao'}.pdf`);
+  }
+
+  async function generateDormLists() {
+    if(Object.keys(rooms).length === 0) return alert("Gere as salas primeiro.");
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'cm', format:'a4', orientation: 'landscape' });
+    let firstPage = true;
+
+    for (const rName of Object.keys(rooms).sort()) {
+        if(!firstPage) doc.addPage();
+        firstPage = false;
+        
+        const template = document.getElementById('dormTemplate');
+        template.innerHTML = `
+            <div style="margin-bottom: 10px;">
+                <p style="font-size: 18px; margin: 0; color: black; font-weight: bold;">OBREIAS: ${roomObreiras[rName] || "NÃO INFORMADO"}</p>
+            </div>
+            <div class="dorm-colored-header" style="background: ${roomColors[rName]};">
+                ${rName.toUpperCase()} | TOTAL DE PARTICIPANTES = ${rooms[rName].length}
+            </div>
+            <table class="dorm-table">
+                <thead><tr><th style="width: 3.5cm; text-align: center;">Número</th><th>Nome Completo</th></tr></thead>
+                <tbody>
+                    ${rooms[rName].map((p, i) => `<tr><td style="text-align: center;">${p.inscricao}</td><td>${p.nome}</td></tr>`).join('')}
+                </tbody>
+            </table>
+        `;
+
+        const canvas = await html2canvas(template, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        doc.addImage(imgData, 'PNG', 0, 0, 29.7, 21);
+    }
+    doc.save('LISTA_SALApdf');
+  }
+
+  function relayout() {
+    const dpi = 150; const s = document.getElementById('stage');
+    s.style.width = Math.round((parseFloat(document.getElementById('badgeW').value) / 2.54) * dpi) + 'px';
+    s.style.height = Math.round((parseFloat(document.getElementById('badgeH').value) / 2.54) * dpi) + 'px';
+    s.style.borderWidth = Math.round((parseFloat(document.getElementById('borderSize').value) / 2.54) * dpi) + 'px';
+  }
+
+  function addText() {
+    const node = document.createElement('div'); node.id = 'txt_'+Date.now(); node.className = 'item text';
+    node.style.left = '50px'; node.style.top = '50px'; node.style.width = '250px'; node.style.height = 'auto'; node.style.minHeight = '40px';
+    node.dataset.type = 'text'; node.dataset.text = '{{INSCRICAO}} - {{NOME}}';
+    node.innerHTML = `<span style="font: 700 24px Roboto, sans-serif; color:#000; display:block; width:100%; text-align:center;">{{INSCRICAO}} - {{NOME}}</span>`;
+    document.getElementById('stage').appendChild(node); makeInteractive(node); select(node.id);
+  }
+
+  function uploadImage(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader(); reader.onload = (e) => {
+        const node = document.createElement('div'); node.id = 'img_'+Date.now(); node.className = 'item image';
+        node.style.left = '50px'; node.style.top = '50px'; node.style.width = '150px'; node.style.height = '100px';
+        node.dataset.type = 'image'; node.dataset.src = e.target.result;
+        node.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%;" draggable="false">`;
+        document.getElementById('stage').appendChild(node); makeInteractive(node); select(node.id);
+      }; reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function makeInteractive(node) {
+    node.addEventListener('mousedown', (e) => { e.stopPropagation(); select(node.id); });
+    interact(node).draggable({ listeners: { move(ev) {
+      const x = (parseFloat(node.style.left)||0) + ev.dx; const y = (parseFloat(node.style.top)||0) + ev.dy;
+      node.style.left = x+'px'; node.style.top = y+'px';
+      if(selectedElement === node) syncPropsToUI();
+    }}}).resizable({ edges: { left:true, right:true, bottom:true, top:true }, listeners: { move(ev) {
+      node.style.width = Math.max(10, ev.rect.width) + 'px'; node.style.height = Math.max(10, ev.rect.height) + 'px';
+      node.style.left = ev.rect.left + 'px'; node.style.top = ev.rect.top + 'px';
+      if(selectedElement === node) syncPropsToUI();
+    }}});
+  }
+
+  function select(id) {
+    deselectAll(); selectedElement = document.getElementById(id);
+    if(selectedElement) {
+        selectedElement.classList.add('selected');
+        document.getElementById('propPanel').classList.remove('hidden');
+        if(selectedElement.dataset.type === 'text') {
+            const span = selectedElement.querySelector('span');
+            document.getElementById('propText').value = selectedElement.dataset.text;
+            document.getElementById('propFontSize').value = parseInt(window.getComputedStyle(span).fontSize);
+            document.getElementById('propColor').value = rgbToHex(window.getComputedStyle(span).color);
+            document.getElementById('propFont').value = window.getComputedStyle(span).fontFamily.replace(/"/g, "'");
+        }
+        syncPropsToUI();
+    }
+  }
+
+  function syncPropsToUI() {
+    if(!selectedElement) return;
+    document.getElementById('propW').value = parseInt(selectedElement.style.width);
+    document.getElementById('propH').value = parseInt(selectedElement.style.height);
+    document.getElementById('propX').value = parseInt(selectedElement.style.left);
+    document.getElementById('propY').value = parseInt(selectedElement.style.top);
+  }
+
+  function updateItem() {
+    if(!selectedElement) return;
+    selectedElement.style.width = Math.max(10, document.getElementById('propW').value) + 'px';
+    selectedElement.style.height = Math.max(10, document.getElementById('propH').value) + 'px';
+    selectedElement.style.left = document.getElementById('propX').value + 'px';
+    selectedElement.style.top = document.getElementById('propY').value + 'px';
+    if(selectedElement.dataset.type === 'text') {
+        const span = selectedElement.querySelector('span');
+        selectedElement.dataset.text = document.getElementById('propText').value;
+        span.innerText = selectedElement.dataset.text;
+        span.style.fontSize = document.getElementById('propFontSize').value + "px";
+        span.style.color = document.getElementById('propColor').value;
+        span.style.fontFamily = document.getElementById('propFont').value;
+    }
+  }
+
+  function centerElement(dir) {
+    if(!selectedElement) return; const s = document.getElementById('stage');
+    if(dir === 'h') selectedElement.style.left = (s.offsetWidth/2 - selectedElement.offsetWidth/2) + 'px';
+    else selectedElement.style.top = (s.offsetHeight/2 - selectedElement.offsetHeight/2) + 'px';
+    syncPropsToUI();
+  }
+
+  function deleteItem() { if(selectedElement) { selectedElement.remove(); deselectAll(); } }
+  function deselectAll(e) { 
+    if(e && (e.target.closest('.item') || e.target.closest('.panel'))) return; 
+    Array.from(document.querySelectorAll('.item')).forEach(n => n.classList.remove('selected')); 
+    document.getElementById('propPanel').classList.add('hidden'); 
+    selectedElement = null; 
+  }
+  function rgbToHex(rgb) { 
+    const res = rgb.match(/\d+/g); 
+    return res ? "#" + res.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('') : "#000000"; 
+  }
+
+  async function generateFinalPDF() {
+    if(people.length === 0) return alert("Distribua os nomes.");
+    const { jsPDF } = window.jspdf;
+    const orientation = document.getElementById('pdfOrient').value;
+    const doc = new jsPDF({ unit:'cm', format:'a4', orientation });
+    const bw = parseFloat(document.getElementById('badgeW').value); 
+    const bh = parseFloat(document.getElementById('badgeH').value);
+    const gap = parseFloat(document.getElementById('pdfGap').value); 
+    const margin = parseFloat(document.getElementById('pdfMargin').value);
+    const a4w = doc.internal.pageSize.getWidth(); 
+    const a4h = doc.internal.pageSize.getHeight();
+    const cols = Math.floor((a4w - 2*margin + gap) / (bw + gap)); 
+    const rows = Math.floor((a4h - 2*margin + gap) / (bh + gap));
+    const perPage = cols * rows; let total = 0;
+
+    for (let p of people) {
+      document.getElementById('stage').style.borderColor = roomColors[p.sala];
+      document.querySelectorAll('.item.text').forEach(node => { 
+        let texto = node.dataset.text
+          .replace('{{INSCRICAO}}', p.inscricao)
+          .replace('{{NOME}}', p.nome)
+          .replace('{{SALA}}', p.sala);
+        node.querySelector('span').innerText = texto;
+      });
+      const canvas = await html2canvas(document.getElementById('stage'), { scale: 2, backgroundColor: "#ffffff" });
+      const imgData = canvas.toDataURL('image/png');
+      for (let c = 0; c < document.getElementById('printCopies').value; c++) {
+        if(total > 0 && total % perPage === 0) doc.addPage();
+        const idx = total % perPage;
+        const x = margin + (idx % cols) * (bw + gap); 
+        const y = margin + Math.floor(idx / cols) * (bh + gap);
+        doc.addImage(imgData, 'PNG', x, y, bw, bh);
+        total++;
+      }
+    }
+    doc.save('Crachas_Finais.pdf');
+  }
+
+  function exportProject() {
+    const items = Array.from(document.querySelectorAll('.item')).map(it => ({ 
+      id: it.id, 
+      type: it.dataset.type, 
+      x: parseInt(it.style.left), 
+      y: parseInt(it.style.top), 
+      w: parseInt(it.style.width), 
+      h: parseInt(it.style.height), 
+      text: it.dataset.text||'', 
+      src: it.dataset.src||'', 
+      font: it.querySelector('span')?.style.fontFamily||'', 
+      size: it.querySelector('span')?.style.fontSize||'', 
+      color: it.querySelector('span')?.style.color||'' 
+    }));
+    const blob = new Blob([JSON.stringify({ 
+      badgeW: document.getElementById('badgeW').value, 
+      badgeH: document.getElementById('badgeH').value, 
+      borderSize: document.getElementById('borderSize').value, 
+      people, rooms, roomColors, roomObreiras, items 
+    })], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Projeto_Shekinah_Landscape.json`; a.click();
+  }
+
+  function importProject(input) {
+    const reader = new FileReader(); reader.onload = (e) => {
+        const data = JSON.parse(e.target.result);
+        document.getElementById('badgeW').value = data.badgeW; 
+        document.getElementById('badgeH').value = data.badgeH; 
+        document.getElementById('borderSize').value = data.borderSize || 0.4;
+        people = data.people; 
+        rooms = data.rooms; 
+        roomColors = data.roomColors; 
+        roomObreiras = data.roomObreiras || {};
+        document.getElementById('stage').innerHTML = "";
+        (data.items||[]).forEach(it => {
+            const node = document.createElement('div'); node.id = it.id; node.className = `item ${it.type}`;
+            node.style.left = it.x+'px'; node.style.top = it.y+'px'; node.style.width = it.w+'px'; node.style.height = it.h+'px'; node.dataset.type = it.type;
+            if(it.type === 'text') { 
+              node.dataset.text = it.text; 
+              node.innerHTML = `<span style="font-family:${it.font}; font-size:${it.size}; color:${it.color}; font-weight:700; display:block; width:100%; text-align:center;">${it.text}</span>`; 
+            }
+            else { 
+              node.dataset.src = it.src; 
+              node.innerHTML = `<img src="${it.src}" style="width:100%; height:100%;" draggable="false">`; 
+            }
+            document.getElementById('stage').appendChild(node); makeInteractive(node);
+        });
+        relayout(); renderRooms();
+    }; reader.readAsText(input.files[0]);
+  }
+
+  relayout();
+</script>
+</body>
+</html>
