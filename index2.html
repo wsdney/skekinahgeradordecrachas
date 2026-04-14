@@ -26,7 +26,7 @@
     .room-manager { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 10px; overflow-y: auto; height: 100%; align-content: start; }
     .room-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; min-height: 250px; display: flex; flex-direction: column; border-top: 10px solid #000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
     .room-title { font-weight: bold; font-size: 16px; color: #fff; margin-bottom: 5px; display: block; }
-    .room-obreiras-input { width: 100%; padding: 8px; background: #1e293b; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; margin: 8px 0; font-size: 12px; }
+    .room-Lideres-input { width: 100%; padding: 8px; background: #1e293b; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; margin: 8px 0; font-size: 12px; }
     
     .color-palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
     .color-swatch { width: 100%; aspect-ratio: 1/1; min-height: 32px; border-radius: 6px; cursor: pointer; border: 2px solid rgba(255,255,255,0.15); }
@@ -162,7 +162,7 @@
   let people = []; 
   let rooms = {}; 
   let roomColors = {}; 
-  let roomObreiras = {};
+  let roomLideres = {};
   const quickColors = ['#FFFF00', '#FF0000', '#0000FF', '#00FF00', '#FFA500', '#FF00FF', '#00FFFF', '#808080', '#000000', '#FFFFFF', '#800080', '#A52A2A'];
 
   let selectedElement = null;
@@ -213,7 +213,7 @@
       if(!rooms[rName]) { 
         rooms[rName] = []; 
         roomColors[rName] = quickColors[Object.keys(rooms).length % quickColors.length];
-        roomObreiras[rName] = ""; 
+        roomLideres[rName] = ""; 
       }
       rooms[rName].push(p);
     });
@@ -230,7 +230,7 @@
       div.innerHTML = `
         <div class="room-header">
           <span class="room-title">${rName} (${rooms[rName].length})</span>
-          <input type="text" class="room-obreiras-input" placeholder="Obreiras..." value="${roomObreiras[rName]||''}" oninput="roomObreiras['${rName}']=this.value">
+          <input type="text" class="room-Lideres-input" placeholder="Lideres..." value="${roomLideres[rName]||''}" oninput="roomLideres['${rName}']=this.value">
           <div class="color-palette">${palette}</div>
         </div>
         <div class="drop-zone" ondragover="allowDrop(event)" ondrop="drop(event)" data-room="${rName}">
@@ -343,7 +343,7 @@
         const template = document.getElementById('dormTemplate');
         template.innerHTML = `
             <div style="margin-bottom: 10px;">
-                <p style="font-size: 18px; margin: 0; color: black; font-weight: bold;">OBREIAS: ${roomObreiras[rName] || "NÃO INFORMADO"}</p>
+                <p style="font-size: 18px; margin: 0; color: black; font-weight: bold;">OBREIAS: ${roomLideres[rName] || "NÃO INFORMADO"}</p>
             </div>
             <div class="dorm-colored-header" style="background: ${roomColors[rName]};">
                 ${rName.toUpperCase()} | TOTAL DE PARTICIPANTES = ${rooms[rName].length}
@@ -518,7 +518,7 @@
       badgeW: document.getElementById('badgeW').value, 
       badgeH: document.getElementById('badgeH').value, 
       borderSize: document.getElementById('borderSize').value, 
-      people, rooms, roomColors, roomObreiras, items 
+      people, rooms, roomColors, roomLideres, items 
     })], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Projeto_Shekinah_Landscape.json`; a.click();
   }
@@ -532,7 +532,7 @@
         people = data.people; 
         rooms = data.rooms; 
         roomColors = data.roomColors; 
-        roomObreiras = data.roomObreiras || {};
+        roomLideres = data.roomLideres || {};
         document.getElementById('stage').innerHTML = "";
         (data.items||[]).forEach(it => {
             const node = document.createElement('div'); node.id = it.id; node.className = `item ${it.type}`;
