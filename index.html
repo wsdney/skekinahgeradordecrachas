@@ -93,6 +93,18 @@
 
     .quick-add-form { background: var(--surface); padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
     .quick-add-form input { margin-top: 2px; margin-bottom: 8px; background: var(--panel-bg); }
+
+    /* Estilos do Manual Customizado */
+    .manual-container { padding: 40px; overflow-y: auto; height: 100%; background: var(--surface); line-height: 1.6; color: var(--panel-fg); }
+    .manual-content { max-width: 900px; margin: 0 auto; background: var(--card); padding: 40px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .manual-content h1 { color: var(--accent); border-bottom: 2px solid var(--highlight); padding-bottom: 10px; margin-bottom: 20px; font-size: 24px; }
+    .manual-content h2 { color: var(--btn2); margin-top: 30px; margin-bottom: 15px; font-size: 20px; border-left: 4px solid var(--btn2); padding-left: 15px; }
+    .manual-content h3 { color: var(--accent); margin-top: 20px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    .manual-content ul { padding-left: 20px; list-style-type: none; }
+    .manual-content li { margin-bottom: 12px; position: relative; padding-left: 5px; }
+    .manual-content li em { font-style: normal; color: var(--muted); }
+    .manual-content strong { color: var(--accent); font-weight: bold; }
+    .manual-content p { margin-bottom: 15px; }
   </style>
 </head>
 <body>
@@ -100,12 +112,13 @@
 <header class="main-header">
   <div style="display:flex; align-items:center; gap:12px;">
     <div style="background: var(--btn); color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900;">S</div>
-    <div style="font-weight: 800; font-size: 1.1rem; color: var(--panel-fg);">Shekinah <span style="color: var(--accent);">Pro</span> <small style="font-size: 10px; opacity: 0.6;">Pro</small></div>
+    <div style="font-weight: 800; font-size: 1.1rem; color: var(--panel-fg);">Shekinah <span style="color: var(--accent);">Pro</span> <small style="font-size: 10px; opacity: 0.6;">v17.0</small></div>
   </div>
   
   <div class="tabs">
     <button class="tab-btn active" id="tabRooms" onclick="switchTab('rooms')">1. DADOS & SALAS</button>
     <button class="tab-btn" id="tabEditor" onclick="switchTab('editor')">2. DESIGNER</button>
+    <button class="tab-btn" id="tabManual" onclick="switchTab('manual')">3. MANUAL DE UTILIZAÇÃO</button>
   </div>
   
   <div style="display:flex; gap:8px;">
@@ -116,8 +129,8 @@
   </div>
 </header>
 
-<div class="wrap">
-  <aside class="side-panel">
+<div class="wrap" id="mainWrapper">
+  <aside class="side-panel" id="leftPanel">
     <div id="roomTools">
         <div class="panel-section">
             <div class="section-title">📂 Importação de Dados</div>
@@ -283,9 +296,93 @@
           <div id="snap-h-center" class="snap-line snap-h"></div>
           <div id="snap-v-center" class="snap-line snap-v"></div>
       </div>
+      <div id="viewManual" class="manual-container hidden">
+          <div class="manual-content">
+              <h1>📘 Shekinah Pro — Sistema de Crachás e Eventos</h1>
+              <p>O sistema é dividido em duas abas principais: 1. DADOS & SALAS (Logística e Participantes) e 2. DESIGNER (Criação visual).</p>
+              
+              <h2>1. Gestão de Participantes e Salas (Aba 1)</h2>
+              <p>Esta aba é o coração da organização do seu evento.</p>
+
+              <h3>📥 Importação de Dados</h3>
+              <p>Existem três formas de inserir participantes:</p>
+              <ul>
+                  <li><strong>Excel/CSV:</strong> Arraste um arquivo para a zona de drop ou clique nela. O sistema extrai automaticamente "Inscrição" e "Nome".</li>
+                  <li><strong>Colagem Manual:</strong> Cole uma lista no formato <em>Número - Nome Completo</em> na área de texto.</li>
+                  <li><strong>Adição Rápida (Individual):</strong> Dentro de cada card de sala, utilize o formulário "➕ Adição Rápida". Digite o Nº e o Nome e clique em Confirmar Adição. Isso é ideal para inscrições de última hora sem precisar regerar as salas.</li>
+              </ul>
+
+              <h3>🏠 Criar e Gerir Salas</h3>
+              <p>No painel Gestão de Salas, escolha o tipo de agrupamento:</p>
+              <ul>
+                  <li><strong>Pessoas por Sala:</strong> Você define a capacidade de cada local.</li>
+                  <li><strong>Quantidade de Salas:</strong> Você define em quantos grupos quer dividir o total de inscritos.</li>
+                  <li>Defina o Prefixo (ex: Quarto, Sala, Micro-ônibus).</li>
+                  <li>Clique em <strong>Gerar Salas</strong>.</li>
+                  <li><strong>Organização Visual:</strong> Altere a cor de cada sala clicando nos quadradinhos coloridos no topo do card.</li>
+                  <li>Preencha o campo <strong>Líderes</strong> para cada grupo.</li>
+                  <li><strong>Drag & Drop:</strong> Arraste participantes entre as salas para ajustes finos.</li>
+              </ul>
+
+              <h2>2. Criação do Design dos Crachás (Aba 2)</h2>
+              <p>Aqui você define a identidade visual do evento.</p>
+
+              <h3>📏 Configuração do Formato</h3>
+              <ul>
+                  <li>Defina <strong>Largura e Altura</strong> em centímetros (o padrão comum é 10x7cm ou 9x13cm).</li>
+                  <li><strong>Ajuste a Borda/Moldura:</strong> Esta linha assumirá a cor da sala (ou a cor única escolhida).</li>
+                  <li><strong>Cor de Fundo:</strong> Use o seletor para definir a cor base do cartão.</li>
+              </ul>
+
+              <h3>➕ Inserção de Elementos</h3>
+              <ul>
+                  <li><strong>Texto:</strong> Adicione e use as tags <strong>{{NOME}}</strong>, <strong>{{INSCRICAO}}</strong> ou <strong>{{SALA}}</strong> para que o sistema preencha os dados automaticamente.</li>
+                  <li><strong>Imagem:</strong> Envie logos do evento ou patrocinadores.</li>
+                  <li><strong>QR Code Auto:</strong> Adiciona um código único baseado no número de inscrição.</li>
+              </ul>
+
+              <h3>⚙️ Propriedades e Fontes</h3>
+              <p>Ao selecionar um texto, você pode:</p>
+              <ul>
+                  <li>Escolher entre diversas famílias, incluindo <strong>Arial</strong>, <strong>Bebas Neue</strong> e fontes cursivas.</li>
+                  <li><strong>Sublinhado:</strong> Ative a opção para uma linha elegante com distanciamento visual agradável.</li>
+                  <li><strong>Alinhamento:</strong> Esquerda, Centro, Direita ou Justificado.</li>
+              </ul>
+
+              <h2>3. Emissão de Crachás sem Salas (Fluxo Rápido)</h2>
+              <p>Se o seu evento não exige divisão por quartos ou salas:</p>
+              <ul>
+                  <li>Importe a lista de nomes.</li>
+                  <li>No painel <strong>⚡ Fluxo Rápido</strong>, escolha <strong>Cor Única</strong> (o padrão é Preto #000000) ou <strong>Cores Variadas</strong>.</li>
+                  <li>Clique em <strong>GERAR CRACHÁS DIRETO</strong>.</li>
+                  <li>Vá para a aba Designer, monte o layout e o PDF será gerado com todos os nomes na cor escolhida.</li>
+              </ul>
+
+              <h2>4. Listas e Relatórios (Logística)</h2>
+              <p>O sistema gera documentos automáticos baseados nos seus dados:</p>
+              <ul>
+                  <li><strong>Lista de Dormitórios (PDF):</strong> Gera um documento em modo paisagem, organizado por sala, exibindo o nome da sala, a cor, o total de pessoas e o nome dos Líderes.</li>
+                  <li><strong>Lista Numérica:</strong> PDF com todos os participantes em ordem crescente de inscrição.</li>
+                  <li><strong>Lista Alfabética:</strong> PDF com todos os nomes em ordem de A-Z, incluindo a identificação da cor/sala de cada um.</li>
+              </ul>
+
+              <h2>5. Salvamento e Finalização</h2>
+              <ul>
+                  <li><strong>Auto-Save:</strong> O sistema salva cada alteração automaticamente no seu navegador.</li>
+                  <li><strong>Exportar/Importar JSON:</strong> Sempre baixe o arquivo .json ao terminar um design. Isso permite que você abra o projeto exatamente como parou em outro computador.</li>
+                  <li><strong>Gerar PDF Final:</strong> No painel direito, defina a margem da folha (padrão otimizado em 0.2cm) e o espaço entre crachás. Clique em <strong>GERAR PDF FINAL</strong>. O PDF sairá sequencial por salas, facilitando a separação física após a impressão.</li>
+              </ul>
+
+              <h2>🗑️ Dicas de Manutenção</h2>
+              <ul>
+                  <li><strong>Limpar Dados (Manter Design):</strong> Remove os nomes para um novo evento, mas guarda seu layout, logos e fontes.</li>
+                  <li><strong>Novo Projeto (Limpar Tudo):</strong> Reseta o sistema completamente para um início do zero.</li>
+              </ul>
+          </div>
+      </div>
   </main>
 
-  <aside class="side-panel right">
+  <aside class="side-panel right" id="rightPanel">
       <div class="panel-section">
           <div class="section-title">📑 Camadas (Layers)</div>
           <div id="layersList" style="max-height: 300px; overflow-y: auto;">
@@ -348,10 +445,25 @@
   function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+    
     document.getElementById('viewRooms').classList.toggle('hidden', tab !== 'rooms');
     document.getElementById('viewEditor').classList.toggle('hidden', tab !== 'editor');
+    document.getElementById('viewManual').classList.toggle('hidden', tab !== 'manual');
+    
+    // Gerenciar painéis laterais
+    document.getElementById('leftPanel').classList.toggle('hidden', tab === 'manual');
+    document.getElementById('rightPanel').classList.toggle('hidden', tab === 'manual');
+    
     document.getElementById('roomTools').classList.toggle('hidden', tab !== 'rooms');
     document.getElementById('editorTools').classList.toggle('hidden', tab !== 'editor');
+    
+    // Ajustar layout da grid principal
+    if(tab === 'manual') {
+        document.getElementById('mainWrapper').style.gridTemplateColumns = '1fr';
+    } else {
+        document.getElementById('mainWrapper').style.gridTemplateColumns = '360px 1fr 280px';
+    }
+
     if(tab === 'editor') {
         relayout();
         updateLayersList();
