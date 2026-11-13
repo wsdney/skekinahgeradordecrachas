@@ -94,6 +94,32 @@
     .quick-add-form { background: var(--surface); padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
     .quick-add-form input { margin-top: 2px; margin-bottom: 8px; background: var(--panel-bg); }
 
+    .person-tag { display: flex; justify-content: space-between; align-items: center; gap: 6px; background: var(--surface); padding: 6px 8px; margin-bottom: 4px; border-radius: 6px; font-size: 11px; cursor: move; user-select: none; border: 1px solid transparent; }
+    .person-tag:hover { border-color: var(--border); }
+    .person-tag.editing { cursor: default; border-color: var(--accent); background: var(--card); padding: 6px; }
+    .person-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .person-edit-btn, .person-delete-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: bold; padding: 2px 5px; border-radius: 4px; line-height: 1; flex-shrink: 0; }
+    .person-edit-btn:hover { background: var(--btn); color: #fff; }
+    .person-delete-btn:hover { background: var(--danger); color: #fff; }
+    .person-inline-input { padding: 4px 6px !important; margin-top: 0 !important; font-size: 11px !important; border-radius: 4px !important; background: var(--surface) !important; }
+
+    /* Modal de Seleção de Participantes para PDF */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+    .modal-box { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 680px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.4); overflow: hidden; }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--card); }
+    .select-room-group { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--card); }
+    .select-room-header { padding: 8px 12px; background: var(--surface); display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 12px; border-bottom: 1px solid var(--border); }
+    .select-person-row { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-bottom: 1px solid var(--border); font-size: 12px; cursor: pointer; }
+    .select-person-row:last-child { border-bottom: none; }
+    .select-person-row:hover { background: var(--highlight); }
+    .select-person-row input[type="checkbox"] { width: 15px; height: 15px; margin: 0; cursor: pointer; flex-shrink: 0; }
+
+    .room-action-btn { background: var(--surface); border: 1px solid var(--border); color: var(--panel-fg); cursor: pointer; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+    .room-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .room-action-btn.danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+
     /* Estilos do Manual Customizado */
     .manual-container { padding: 40px; overflow-y: auto; height: 100%; background: var(--surface); line-height: 1.6; color: var(--panel-fg); }
     .manual-content { max-width: 900px; margin: 0 auto; background: var(--card); padding: 40px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -152,14 +178,23 @@
                 <option value="perRoom">Pessoas por Sala</option>
                 <option value="totalRooms">Quantidade de Salas</option>
             </select>
-            <div id="boxPerRoom"><label>Qtd por Sala</label><input type="number" id="roomCapacity" value="7"></div>
-            <div id="boxTotalRooms" class="hidden"><label>Total de Salas</label><input type="number" id="totalRoomsTarget" value="7"></div>
+            <div class="grid2" id="criteriaInputsGrid">
+                <div id="boxPerRoom"><label>Qtd por Sala</label><input type="number" id="roomCapacity" value="7" min="1"></div>
+                <div id="boxTotalRooms"><label id="labelTotalRooms">Qtd de Salas</label><input type="number" id="totalRoomsTarget" value="5" min="1"></div>
+            </div>
+            <p style="font-size: 9px; color: var(--muted); margin-top: 4px; margin-bottom: 4px;">Sem nomes na lista, "Gerar Salas" criará a <b>Qtd de Salas</b> vazias definida acima.</p>
             
             <label>Prefixo do Agrupamento</label>
             <input type="text" id="roomPrefix" value="Sala" placeholder="Ex: Sala, Stand, Auditório, Mesa">
             <p style="font-size: 9px; color: var(--muted); margin-top: 4px;">Será exibido como: Sala 01, Stand 01, etc.</p>
             
             <button class="btn secondary" style="width:100%" onclick="autoDistribute()">Gerar Salas</button>
+            <button class="btn outline" style="width:100%" onclick="addEmptyRoom()">➕ Adicionar Sala Vazia</button>
+
+            <div class="grid2" style="margin-top: 8px;">
+                <button class="btn outline" style="margin-top:0; font-size:11px;" title="Remove os nomes de todas as salas, mantendo as salas criadas" onclick="resetAllRooms()">🔄 Redefinir Salas</button>
+                <button class="btn danger outline" style="margin-top:0; font-size:11px;" title="Apaga todas as salas e participantes" onclick="deleteAllRooms()">🗑️ Apagar Salas</button>
+            </div>
         </div>
 
         <div class="panel-section">
@@ -317,8 +352,10 @@
               <ul>
                   <li><strong>Pessoas por Sala:</strong> Você define a capacidade de cada local.</li>
                   <li><strong>Quantidade de Salas:</strong> Você define em quantos grupos quer dividir o total de inscritos.</li>
+                  <li><strong>Gerar Salas Vazias (Sem Nomes):</strong> Se a lista de nomes estiver em branco, defina o número desejado em <strong>Qtd de Salas</strong> e clique em <strong>Gerar Salas</strong> para criar todas as salas vazias de uma vez, ou use o botão <strong>➕ Adicionar Sala Vazia</strong> para criar salas avulsas a qualquer momento.</li>
                   <li>Defina o Prefixo (ex: Quarto, Sala, Micro-ônibus).</li>
-                  <li>Clique em <strong>Gerar Salas</strong>.</li>
+                  <li><strong>Excluir Participante Individual:</strong> Clique no botão <strong>✕</strong> ao lado de qualquer nome dentro da sala para removê-lo.</li>
+                  <li><strong>Redefinir ou Apagar Salas:</strong> Em cada card você pode clicar em <strong>🔄 Esvaziar</strong> (remove apenas os nomes daquela sala) ou <strong>🗑️ Apagar</strong> (exclui a sala). No painel lateral, você também pode esvaziar ou apagar todas as salas de uma só vez.</li>
                   <li><strong>Organização Visual:</strong> Altere a cor de cada sala clicando nos quadradinhos coloridos no topo do card.</li>
                   <li>Preencha o campo <strong>Líderes</strong> para cada grupo.</li>
                   <li><strong>Drag & Drop:</strong> Arraste participantes entre as salas para ajustes finos.</li>
@@ -370,7 +407,7 @@
               <ul>
                   <li><strong>Auto-Save:</strong> O sistema salva cada alteração automaticamente no seu navegador.</li>
                   <li><strong>Exportar/Importar JSON:</strong> Sempre baixe o arquivo .json ao terminar um design. Isso permite que você abra o projeto exatamente como parou em outro computador.</li>
-                  <li><strong>Gerar PDF Final:</strong> No painel direito, defina a margem da folha (padrão otimizado em 0.2cm) e o espaço entre crachás. Clique em <strong>GERAR PDF FINAL</strong>. O PDF sairá sequencial por salas, facilitando a separação física após a impressão.</li>
+                  <li><strong>Gerar PDF Final:</strong> No painel direito, defina a margem da folha (padrão otimizado em 0.2cm) e escolha entre <strong>Com Espaço entre Crachás</strong> ou <strong>Sem Espaço (Colados / 0 cm)</strong>. Se a opção <strong>Incluir Marcas de Corte</strong> estiver marcada, mesmo sem espaço entre os crachás o sistema desenhará as linhas divisórias de corte tanto na vertical quanto na horizontal entre os crachás.</li>
               </ul>
 
               <h2>🗑️ Dicas de Manutenção</h2>
@@ -397,25 +434,57 @@
               <option value="portrait">Retrato (A4)</option>
               <option value="landscape">Paisagem (A4)</option>
           </select>
+          <label>Espaçamento entre Crachás</label>
+          <select id="pdfGapMode" onchange="togglePdfGapMode()">
+              <option value="withGap">Com Espaço entre Crachás</option>
+              <option value="noGap">Sem Espaço (Colados / 0 cm)</option>
+          </select>
           <div class="grid2">
-              <div><label>Margem (cm)</label><input id="pdfMargin" type="number" value="0.2" step="0.1"></div>
-              <div><label>Espaço (cm)</label><input id="pdfGap" type="number" value="0.5" step="0.1"></div>
+              <div><label>Margem (cm)</label><input id="pdfMargin" type="number" value="0.2" min="0" step="0.1"></div>
+              <div id="pdfGapContainer"><label>Espaço (cm)</label><input id="pdfGap" type="number" value="0.5" min="0" step="0.1" oninput="syncPdfGapInput()"></div>
           </div>
           <label>Cópias por Pessoa</label>
-          <input type="number" id="printCopies" value="1">
+          <input type="number" id="printCopies" value="1" min="1">
           
           <div style="margin-top: 10px;">
               <input type="checkbox" id="pdfCropMarks" checked style="width: auto; margin-right: 5px;">
               <label style="display: inline; text-transform: none;">Incluir Marcas de Corte</label>
+              <p style="font-size: 9px; color: var(--muted); margin: 4px 0 0 0; line-height: 1.3;">Sem espaço (0 cm), a marca de corte faz a separação vertical e horizontal entre os crachás.</p>
           </div>
           
-          <button class="btn secondary" style="width:100%; height:50px; margin-top:15px; font-size: 14px;" onclick="generateFinalPDF()">GERAR PDF FINAL</button>
+          <button class="btn secondary" style="width:100%; height:46px; margin-top:15px; font-size: 13px;" onclick="generateFinalPDF()">GERAR PDF (TODOS)</button>
+          <button class="btn outline" style="width:100%; height:40px; margin-top:8px; font-size: 12px; border-color: var(--accent); color: var(--accent);" onclick="openSelectPeopleModal()">🎯 ESCOLHER NOMES P/ PDF</button>
       </div>
 
       <div class="panel-section" style="margin-top: auto;">
           <div id="autoSaveStatus" style="font-size: 10px; color: var(--muted); text-align: center;">Projeto salvo localmente ✓</div>
       </div>
   </aside>
+</div>
+
+<div id="selectPeopleModal" class="modal-overlay hidden" onclick="if(event.target===this) closeSelectPeopleModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div style="font-weight: 800; font-size: 15px; color: var(--accent);">🎯 Escolher Participantes para Gerar Crachás</div>
+        <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Os crachás serão gerados automaticamente com a cor da sala de cada nome selecionado.</div>
+      </div>
+      <button type="button" class="person-delete-btn" style="font-size: 16px; padding: 4px 8px;" onclick="closeSelectPeopleModal()">✕</button>
+    </div>
+    <div style="padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--card); display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <input type="text" id="searchModalPeople" placeholder="🔍 Buscar por nome, inscrição ou sala..." style="flex: 1; min-width: 200px; margin-top: 0;" oninput="renderSelectPeopleModalList()">
+      <button type="button" class="room-action-btn" onclick="toggleSelectAllModalPeople(true)">☑️ Marcar Visíveis</button>
+      <button type="button" class="room-action-btn" onclick="toggleSelectAllModalPeople(false)">⬜ Desmarcar Todos</button>
+    </div>
+    <div class="modal-body" id="selectPeopleModalList"></div>
+    <div class="modal-footer">
+      <div id="selectedPeopleCountInfo" style="font-size: 12px; font-weight: bold; color: var(--panel-fg);">0 selecionado(s)</div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn outline" style="margin-top: 0;" onclick="closeSelectPeopleModal()">Cancelar</button>
+        <button type="button" class="btn secondary" style="margin-top: 0;" onclick="generateSelectedPeoplePDF()">🖨️ GERAR PDF DOS SELECIONADOS</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="dormTemplate"></div>
@@ -427,6 +496,8 @@
   let roomColors = {}; 
   let roomLideres = {};
   let selectedElement = null;
+  let editingPersonId = null;
+  let selectedPeopleForPdf = new Set();
   let directBadgeColorMode = 'single';
   let directBadgeSingleColor = '#000000';
   const quickColors = ['#FFFF00', '#FF0000', '#0000FF', '#00FF00', '#FFA500', '#FF00FF', '#00FFFF', '#808080', '#000000', '#FFFFFF', '#800080', '#A52A2A'];
@@ -514,8 +585,9 @@
 
   function toggleCriteria() {
     const crit = document.getElementById('distributeCriteria').value;
-    document.getElementById('boxPerRoom').classList.toggle('hidden', crit !== 'perRoom');
-    document.getElementById('boxTotalRooms').classList.toggle('hidden', crit !== 'totalRooms');
+    const isPerRoom = crit === 'perRoom';
+    document.getElementById('boxPerRoom').classList.toggle('hidden', !isPerRoom);
+    document.getElementById('criteriaInputsGrid').style.gridTemplateColumns = isPerRoom ? '1fr 1fr' : '1fr';
   }
 
   function toggleColorMode() {
@@ -526,20 +598,51 @@
 
   function autoDistribute() {
     const rawLines = document.getElementById('nameList').value.trim().split('\n').filter(line => line.trim() !== "");
-    if(rawLines.length === 0) return alert("Adicione nomes primeiro.");
     const crit = document.getElementById('distributeCriteria').value;
     const prefix = document.getElementById('roomPrefix').value.trim() || "Sala";
-    people = []; rooms = {};
+    const totalRoomsCount = Math.max(1, parseInt(document.getElementById('totalRoomsTarget').value, 10) || 1);
+    const capacityPerRoom = Math.max(1, parseInt(document.getElementById('roomCapacity').value, 10) || 1);
+
+    people = [];
+    rooms = {};
+    roomColors = {};
+    roomLideres = {};
+
+    // Geração de salas vazias quando não há nomes na lista
+    if (rawLines.length === 0) {
+      for (let i = 1; i <= totalRoomsCount; i++) {
+        const rName = prefix + " " + String(i).padStart(2, '0');
+        rooms[rName] = [];
+        roomColors[rName] = quickColors[(i - 1) % quickColors.length];
+        roomLideres[rName] = "";
+      }
+      renderRooms();
+      saveToLocalStorage();
+      return;
+    }
+
+    // Se agrupamento for por quantidade de salas, garante a criação de todas as salas definidas
+    if (crit === 'totalRooms') {
+      for (let i = 1; i <= totalRoomsCount; i++) {
+        const rName = prefix + " " + String(i).padStart(2, '0');
+        rooms[rName] = [];
+        roomColors[rName] = quickColors[(i - 1) % quickColors.length];
+        roomLideres[rName] = "";
+      }
+    }
+
     rawLines.forEach((line, idx) => {
       let numero = null;
       let nome = line.trim();
       const match = nome.match(/^(\d+)[^\w]*([\s-–—.]*)(.*)?$/);
-      if (match) {
+      if (match && match[3] && match[3].trim() !== "") {
         numero = parseInt(match[1], 10);
-        nome = (match[3] || '').trim();
+        nome = match[3].trim();
       }
       if (!nome) return;
-      let roomNum = crit === 'perRoom' ? Math.floor(idx / parseInt(document.getElementById('roomCapacity').value))+1 : (idx % parseInt(document.getElementById('totalRoomsTarget').value))+1;
+      let roomNum = crit === 'perRoom'
+        ? Math.floor(idx / capacityPerRoom) + 1
+        : (idx % totalRoomsCount) + 1;
       let rName = prefix + " " + String(roomNum).padStart(2, '0');
       const p = { id: 'p_'+idx+'_'+Date.now(), inscricao: numero !== null ? numero : '—', nome: nome, sala: rName };
       people.push(p);
@@ -551,6 +654,123 @@
       rooms[rName].push(p);
     });
     renderRooms();
+    saveToLocalStorage();
+  }
+
+  function addEmptyRoom() {
+    const prefix = document.getElementById('roomPrefix').value.trim() || "Sala";
+    let nextNum = Object.keys(rooms).length + 1;
+    let rName = prefix + " " + String(nextNum).padStart(2, '0');
+    while (rooms[rName]) {
+      nextNum++;
+      rName = prefix + " " + String(nextNum).padStart(2, '0');
+    }
+    rooms[rName] = [];
+    roomColors[rName] = quickColors[(Object.keys(rooms).length - 1) % quickColors.length];
+    roomLideres[rName] = "";
+    renderRooms();
+    saveToLocalStorage();
+  }
+
+  function removePersonFromRoom(personId, roomName) {
+    if (rooms[roomName]) {
+      rooms[roomName] = rooms[roomName].filter(p => p.id !== personId);
+    }
+    people = people.filter(p => p.id !== personId);
+    selectedPeopleForPdf.delete(personId);
+    if (editingPersonId === personId) editingPersonId = null;
+    renderRooms();
+    saveToLocalStorage();
+  }
+
+  function startEditPerson(personId, roomName) {
+    editingPersonId = personId;
+    renderRooms();
+    setTimeout(() => {
+      const nomeInput = document.getElementById('edit_nome_' + personId);
+      if (nomeInput) {
+        nomeInput.focus();
+        nomeInput.select();
+      }
+    }, 20);
+  }
+
+  function cancelPersonEdit() {
+    editingPersonId = null;
+    renderRooms();
+  }
+
+  function savePersonEdit(personId, roomName) {
+    const inscInput = document.getElementById('edit_insc_' + personId);
+    const nomeInput = document.getElementById('edit_nome_' + personId);
+    if (!nomeInput) return;
+    const novoNome = nomeInput.value.trim();
+    const novaInsc = inscInput ? inscInput.value.trim() : '';
+    if (!novoNome) return alert("O nome do participante não pode ficar em branco.");
+
+    if (rooms[roomName]) {
+      const pRoom = rooms[roomName].find(p => p.id === personId);
+      if (pRoom) {
+        pRoom.nome = novoNome;
+        pRoom.inscricao = novaInsc || '—';
+      }
+    }
+    const pGlobal = people.find(p => p.id === personId);
+    if (pGlobal) {
+      pGlobal.nome = novoNome;
+      pGlobal.inscricao = novaInsc || '—';
+    }
+    editingPersonId = null;
+    renderRooms();
+    saveToLocalStorage();
+  }
+
+  function resetSingleRoom(roomName) {
+    if (!rooms[roomName]) return;
+    if (rooms[roomName].length === 0 && !roomLideres[roomName]) return;
+    if (!confirm(`Deseja redefinir (esvaziar) a "${roomName}"?\nTodos os nomes desta sala serão removidos, mantendo a sala criada.`)) return;
+    const idsToRemove = new Set(rooms[roomName].map(p => p.id));
+    people = people.filter(p => !idsToRemove.has(p.id) && p.sala !== roomName);
+    rooms[roomName] = [];
+    roomLideres[roomName] = "";
+    renderRooms();
+    saveToLocalStorage();
+  }
+
+  function deleteSingleRoom(roomName) {
+    if (!rooms[roomName]) return;
+    if (!confirm(`Deseja apagar a "${roomName}" por completo?`)) return;
+    const idsToRemove = new Set(rooms[roomName].map(p => p.id));
+    people = people.filter(p => !idsToRemove.has(p.id) && p.sala !== roomName);
+    delete rooms[roomName];
+    delete roomColors[roomName];
+    delete roomLideres[roomName];
+    renderRooms();
+    saveToLocalStorage();
+  }
+
+  function resetAllRooms() {
+    const roomKeys = Object.keys(rooms);
+    if (roomKeys.length === 0) return alert("Não há salas criadas para redefinir.");
+    if (!confirm("Deseja redefinir (esvaziar) TODAS as salas?\nOs nomes serão removidos, mas todas as salas continuarão criadas.")) return;
+    people = [];
+    roomKeys.forEach(rName => {
+      rooms[rName] = [];
+      roomLideres[rName] = "";
+    });
+    renderRooms();
+    saveToLocalStorage();
+  }
+
+  function deleteAllRooms() {
+    if (Object.keys(rooms).length === 0 && people.length === 0) return alert("Não há salas para apagar.");
+    if (!confirm("Deseja apagar TODAS as salas e seus participantes de uma só vez?")) return;
+    people = [];
+    rooms = {};
+    roomColors = {};
+    roomLideres = {};
+    renderRooms();
+    saveToLocalStorage();
   }
 
   function prepareDirectBadges() {
@@ -579,7 +799,7 @@
     const container = document.getElementById('viewRooms'); container.innerHTML = '';
     const roomKeys = Object.keys(rooms).sort();
     if(roomKeys.length === 0 && people.length === 0) {
-        container.innerHTML = '<div style="text-align: center; color: var(--muted); margin-top: 100px; grid-column: 1/-1;"><h3>Nenhum dado carregado</h3><p>Importe um arquivo Excel ou cole a lista ao lado.</p></div>';
+        container.innerHTML = '<div style="text-align: center; color: var(--muted); margin-top: 100px; grid-column: 1/-1;"><h3>Nenhum dado carregado</h3><p>Importe um arquivo Excel, cole a lista ao lado ou clique em "Gerar Salas" para criar salas vazias.</p></div>';
         return;
     }
     roomKeys.forEach(rName => {
@@ -588,27 +808,57 @@
       const palette = quickColors.map(c => `<div class="color-swatch" style="background:${c}; width:20px; height:20px; display:inline-block; margin:2px; cursor:pointer; border-radius:4px;" onclick="updateRoomColor('${rName}', '${c}')"></div>`).join('');
       div.innerHTML = `
         <div class="room-header">
-          <span class="room-title">${rName} (${rooms[rName].length})</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:6px;">
+            <span class="room-title" style="margin-bottom:0;">${rName} (${rooms[rName].length})</span>
+            <div style="display:flex; gap:4px;">
+              <button type="button" class="room-action-btn" title="Redefinir/Esvaziar esta sala (mantém a sala)" onclick="resetSingleRoom('${rName}')">🔄 Esvaziar</button>
+              <button type="button" class="room-action-btn danger" title="Apagar esta sala por completo" onclick="deleteSingleRoom('${rName}')">🗑️ Apagar</button>
+            </div>
+          </div>
           <input type="text" placeholder="Lideres..." value="${roomLideres[rName]||''}" oninput="roomLideres['${rName}']=this.value; saveToLocalStorage();" style="margin-bottom:8px;">
           <div class="color-palette">${palette}</div>
           <div class="quick-add-form">
             <div class="section-title" style="font-size: 9px; margin-bottom: 5px;">➕ Adição Rápida</div>
             <div class="grid2">
-                <div><label>Inscrição</label><input type="text" class="quick-insc" placeholder="Nº"></div>
-                <div><label>Nome</label><input type="text" class="quick-nome" placeholder="Nome completo"></div>
+                <div><label>Inscrição</label><input type="text" class="quick-insc" placeholder="Nº" onkeydown="if(event.key==='Enter') addParticipantFromForm('${rName}')"></div>
+                <div><label>Nome</label><input type="text" class="quick-nome" placeholder="Nome completo" onkeydown="if(event.key==='Enter') addParticipantFromForm('${rName}')"></div>
             </div>
             <button class="btn secondary" style="width:100%; margin-top:5px; height:32px; font-size:10px;" onclick="addParticipantFromForm('${rName}')">CONFIRMAR ADIÇÃO</button>
           </div>
         </div>
         <div class="drop-zone-room" data-room="${rName}" style="min-height:50px; margin-top:10px; border: 2px dashed transparent; border-radius: 6px; transition: 0.2s;">
-          ${rooms[rName].map(p => `<div class="person-tag" draggable="true" data-person-id="${p.id}" data-person-room="${rName}" style="background:var(--surface); padding:6px; margin-bottom:4px; border-radius:4px; font-size:11px; cursor:move; user-select:none;">${p.inscricao} - ${p.nome}</div>`).join('')}
+          ${rooms[rName].map(p => {
+            if (editingPersonId === p.id) {
+              const inscVal = (p.inscricao === '—' || p.inscricao === null || p.inscricao === undefined) ? '' : String(p.inscricao).replace(/"/g, '&quot;');
+              const nomeVal = String(p.nome || '').replace(/"/g, '&quot;');
+              return `
+                <div class="person-tag editing" draggable="false" data-person-id="${p.id}" data-person-room="${rName}" onclick="event.stopPropagation();">
+                  <input type="text" id="edit_insc_${p.id}" class="person-inline-input" style="width: 58px; flex-shrink: 0;" value="${inscVal}" placeholder="Nº" onkeydown="if(event.key==='Enter') savePersonEdit('${p.id}', '${rName}'); else if(event.key==='Escape') cancelPersonEdit();">
+                  <input type="text" id="edit_nome_${p.id}" class="person-inline-input" style="flex: 1; min-width: 80px;" value="${nomeVal}" placeholder="Nome completo" onkeydown="if(event.key==='Enter') savePersonEdit('${p.id}', '${rName}'); else if(event.key==='Escape') cancelPersonEdit();">
+                  <div class="person-actions">
+                    <button type="button" class="person-edit-btn" style="background: var(--btn2); color: #fff;" title="Salvar alteração (Enter)" onclick="event.stopPropagation(); savePersonEdit('${p.id}', '${rName}')">✓</button>
+                    <button type="button" class="person-delete-btn" title="Cancelar edição (Esc)" onclick="event.stopPropagation(); cancelPersonEdit()">✕</button>
+                  </div>
+                </div>
+              `;
+            }
+            return `
+              <div class="person-tag" draggable="true" data-person-id="${p.id}" data-person-room="${rName}" ondblclick="event.stopPropagation(); startEditPerson('${p.id}', '${rName}')" title="Duplo clique ou clique em ✏️ para editar">
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${p.inscricao} - ${p.nome}</span>
+                <div class="person-actions">
+                  <button type="button" class="person-edit-btn" title="Editar inscrição e nome" onclick="event.stopPropagation(); startEditPerson('${p.id}', '${rName}')">✏️</button>
+                  <button type="button" class="person-delete-btn" title="Excluir este participante da sala" onclick="event.stopPropagation(); removePersonFromRoom('${p.id}', '${rName}')">✕</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>`;
       container.appendChild(div);
       const dropZone = div.querySelector('.drop-zone-room');
       dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent)'; dropZone.style.backgroundColor = 'var(--highlight)'; });
       dropZone.addEventListener('dragleave', (e) => { if(e.target === dropZone) { dropZone.style.borderColor = 'transparent'; dropZone.style.backgroundColor = 'transparent'; } });
       dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.style.borderColor = 'transparent'; dropZone.style.backgroundColor = 'transparent'; const personId = e.dataTransfer.getData('text/plain'); const oldRoom = e.dataTransfer.getData('text/room'); movePersonToRoom(personId, oldRoom, rName); });
-      div.querySelectorAll('.person-tag').forEach(tag => { tag.addEventListener('dragstart', (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', tag.dataset.personId); e.dataTransfer.setData('text/room', tag.dataset.personRoom); tag.style.opacity = '0.5'; }); tag.addEventListener('dragend', (e) => { tag.style.opacity = '1'; }); });
+      div.querySelectorAll('.person-tag:not(.editing)').forEach(tag => { tag.addEventListener('dragstart', (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', tag.dataset.personId); e.dataTransfer.setData('text/room', tag.dataset.personRoom); tag.style.opacity = '0.5'; }); tag.addEventListener('dragend', (e) => { tag.style.opacity = '1'; }); });
     });
   }
 
@@ -680,7 +930,7 @@
         },
         end() { document.getElementById('snap-v-center').style.display = 'none'; document.getElementById('snap-h-center').style.display = 'none'; }
       }
-    }).resizable({ edges: { left:true, right:true, bottom:true, top:true }, listeners: { move(ev) { node.style.width = Math.max(10, ev.rect.width) + 'px'; node.style.height = Math.max(10, ev.rect.height) + 'px'; node.style.left = ev.rect.left + 'px'; node.style.top = ev.rect.top + 'px'; if(selectedElement === node) syncPropsToUI(); } } });
+    }).resizable({ edges: { left:true, right:true, bottom:true, top:true }, listeners: { move(ev) { node.style.width = Math.max(10, ev.rect.width) + 'px'; node.style.height = Math.max(10, ev.rect.height) + 'px'; node.style.left = ((parseFloat(node.style.left)||0) + ev.deltaRect.left) + 'px'; node.style.top = ((parseFloat(node.style.top)||0) + ev.deltaRect.top) + 'px'; if(selectedElement === node) syncPropsToUI(); } } });
   }
 
   function select(id) {
@@ -747,58 +997,370 @@
   function deselectAll(e) { if(e && (e.target.closest('.item') || e.target.closest('.side-panel'))) return; Array.from(document.querySelectorAll('.item')).forEach(n => n.classList.remove('selected')); document.getElementById('propPanel').classList.add('hidden'); selectedElement = null; updateLayersList(); }
   function rgbToHex(rgb) { const res = rgb.match(/\d+/g); return res ? "#" + res.slice(0,3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('') : "#000000"; }
 
-  async function generateFinalPDF() {
-    if(people.length === 0) return alert("Carregue os participantes primeiro.");
-    let sortedPeople = [];
-    const roomKeys = Object.keys(rooms).sort();
-    if (roomKeys.length > 0) { roomKeys.forEach(rName => { rooms[rName].forEach(p => sortedPeople.push(p)); }); } else { sortedPeople = people; }
-    const { jsPDF } = window.jspdf;
-    const orientation = document.getElementById('pdfOrient').value;
-    const doc = new jsPDF({ unit:'cm', format:'a4', orientation });
-    const bw = parseFloat(document.getElementById('badgeW').value); 
-    const bh = parseFloat(document.getElementById('badgeH').value);
-    const gap = parseFloat(document.getElementById('pdfGap').value); 
-    const margin = parseFloat(document.getElementById('pdfMargin').value);
-    const cropMarks = document.getElementById('pdfCropMarks').checked;
-    const bgColor = document.getElementById('badgeBgColor').value;
-    const a4w = doc.internal.pageSize.getWidth(); 
-    const a4h = doc.internal.pageSize.getHeight();
-    const cols = Math.floor((a4w - 2*margin + gap) / (bw + gap)); 
-    const rows = Math.floor((a4h - 2*margin + gap) / (bh + gap));
-    const perPage = cols * rows; 
-    let total = 0;
-    for (let p of sortedPeople) {
-      const borderColor = p.color || (p.sala && roomColors[p.sala]) || '#000000';
-      document.getElementById('stage').style.borderColor = borderColor;
-      document.getElementById('stage').style.backgroundColor = bgColor;
-      document.querySelectorAll('.item.text').forEach(node => { 
-        let texto = node.dataset.text.replace('{{INSCRICAO}}', p.inscricao).replace('{{NOME}}', p.nome).replace('{{SALA}}', p.sala);
-        const span = node.querySelector('span');
-        span.innerText = texto;
-        if (node.dataset.underline === "true") { span.style.textDecoration = "none"; span.style.borderBottom = `2px solid ${span.style.color}`; span.style.paddingBottom = "2px"; } else { span.style.borderBottom = "none"; span.style.paddingBottom = "0"; }
-        span.style.textAlign = node.dataset.align || "center";
-        if(node.dataset.align === "justify") span.style.textAlignLast = "center";
-      });
-      const qrItems = document.querySelectorAll('.item.qrcode');
-      for(let qrNode of qrItems) { qrNode.innerHTML = ''; new QRCode(qrNode, { text: String(p.inscricao), width: qrNode.offsetWidth, height: qrNode.offsetHeight }); }
-      const canvas = await html2canvas(document.getElementById('stage'), { scale: 2, backgroundColor: bgColor });
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
-      for (let c = 0; c < parseInt(document.getElementById('printCopies').value); c++) {
-        if(total > 0 && total % perPage === 0) doc.addPage();
-        const idx = total % perPage;
-        const x = margin + (idx % cols) * (bw + gap); 
-        const y = margin + Math.floor(idx / cols) * (bh + gap);
-        doc.addImage(imgData, 'JPEG', x, y, bw, bh);
-        if(cropMarks) { doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.01); doc.line(x - 0.2, y, x + 0.1, y); doc.line(x, y - 0.2, x, y + 0.1); doc.line(x + bw - 0.1, y, x + bw + 0.2, y); doc.line(x, y - 0.2, x, y + 0.1); doc.line(x - 0.2, y + bh, x + 0.1, y + bh); doc.line(x, y + bh - 0.1, x, y + bh + 0.2); doc.line(x + bw - 0.1, y + bh, x + bw + 0.2, y + bh); doc.line(x + bw, y + bh - 0.1, x + bw, y + bh + 0.2); }
-        total++;
+  function togglePdfGapMode() {
+    const mode = document.getElementById('pdfGapMode').value;
+    const gapInput = document.getElementById('pdfGap');
+    if (mode === 'noGap') {
+      gapInput.value = 0;
+    } else {
+      const currentVal = parseFloat(gapInput.value);
+      if (isNaN(currentVal) || currentVal <= 0) {
+        gapInput.value = 0.5;
       }
     }
-    doc.save('Crachas_Shekinah_Pro_Organizado.pdf');
+  }
+
+  function syncPdfGapInput() {
+    const val = parseFloat(document.getElementById('pdfGap').value);
+    const modeSelect = document.getElementById('pdfGapMode');
+    if (!isNaN(val) && val <= 0) {
+      modeSelect.value = 'noGap';
+    } else {
+      modeSelect.value = 'withGap';
+    }
+  }
+
+  function drawPageCropMarks(doc, pageBadges, bw, bh, gap) {
+    if (!pageBadges || pageBadges.length === 0) return;
+    if (gap > 0) {
+      // Com espaço entre crachás: marcas de corte nos 4 cantos de cada crachá
+      doc.setLineDashPattern([], 0);
+      doc.setDrawColor(140, 140, 140);
+      doc.setLineWidth(0.02);
+      pageBadges.forEach(({ x, y }) => {
+        // Superior Esquerdo
+        doc.line(x - 0.2, y, x + 0.1, y);
+        doc.line(x, y - 0.2, x, y + 0.1);
+        // Superior Direito
+        doc.line(x + bw - 0.1, y, x + bw + 0.2, y);
+        doc.line(x + bw, y - 0.2, x + bw, y + 0.1);
+        // Inferior Esquerdo
+        doc.line(x - 0.2, y + bh, x + 0.1, y + bh);
+        doc.line(x, y + bh - 0.1, x, y + bh + 0.2);
+        // Inferior Direito
+        doc.line(x + bw - 0.1, y + bh, x + bw + 0.2, y + bh);
+        doc.line(x + bw, y + bh - 0.1, x + bw, y + bh + 0.2);
+      });
+    } else {
+      // Sem espaço entre crachás (gap = 0): linhas divisórias horizontais e verticais únicas entre os crachás
+      const drawnSegments = new Set();
+      const addSegment = (x1, y1, x2, y2) => {
+        const key = `${x1.toFixed(3)},${y1.toFixed(3)}-${x2.toFixed(3)},${y2.toFixed(3)}`;
+        if (drawnSegments.has(key)) return;
+        drawnSegments.add(key);
+        // Trilha branca fina contínua por baixo para contraste sobre molduras pretas/escuras
+        doc.setLineDashPattern([], 0);
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.025);
+        doc.line(x1, y1, x2, y2);
+        // Linha tracejada escura por cima para contraste sobre molduras claras/coloridas
+        doc.setLineDashPattern([0.15, 0.12], 0);
+        doc.setDrawColor(60, 60, 60);
+        doc.setLineWidth(0.02);
+        doc.line(x1, y1, x2, y2);
+      };
+
+      pageBadges.forEach(({ x, y }) => {
+        // Horizontais (topo e base do crachá)
+        addSegment(x, y, x + bw, y);
+        addSegment(x, y + bh, x + bw, y + bh);
+        // Verticais (esquerda e direita do crachá)
+        addSegment(x, y, x, y + bh);
+        addSegment(x + bw, y, x + bw, y + bh);
+
+        // Guias externas de corte nas pontas
+        doc.setLineDashPattern([], 0);
+        doc.setDrawColor(100, 100, 100);
+        doc.setLineWidth(0.02);
+        doc.line(x - 0.25, y, x, y);
+        doc.line(x, y - 0.25, x, y);
+        doc.line(x + bw, y, x + bw + 0.25, y);
+        doc.line(x + bw, y - 0.25, x + bw, y);
+        doc.line(x - 0.25, y + bh, x, y + bh);
+        doc.line(x, y + bh, x, y + bh + 0.25);
+        doc.line(x + bw, y + bh, x + bw + 0.25, y + bh);
+        doc.line(x + bw, y + bh, x + bw, y + bh + 0.25);
+      });
+      doc.setLineDashPattern([], 0);
+    }
+  }
+
+  function getAllOrderedPeople() {
+    let list = [];
+    const roomKeys = Object.keys(rooms).sort();
+    if (roomKeys.length > 0) {
+      roomKeys.forEach(rName => {
+        (rooms[rName] || []).forEach(p => list.push(p));
+      });
+    } else {
+      list = [...people];
+    }
+    return list;
+  }
+
+  function openSelectPeopleModal() {
+    const all = getAllOrderedPeople();
+    if (all.length === 0) return alert("Carregue ou adicione participantes primeiro.");
+    // Limpa IDs que não existem mais
+    const validIds = new Set(all.map(p => p.id));
+    selectedPeopleForPdf.forEach(id => { if (!validIds.has(id)) selectedPeopleForPdf.delete(id); });
+    document.getElementById('searchModalPeople').value = '';
+    document.getElementById('selectPeopleModal').classList.remove('hidden');
+    renderSelectPeopleModalList();
+  }
+
+  function closeSelectPeopleModal() {
+    document.getElementById('selectPeopleModal').classList.add('hidden');
+  }
+
+  function togglePersonPdfSelection(personId) {
+    if (selectedPeopleForPdf.has(personId)) {
+      selectedPeopleForPdf.delete(personId);
+    } else {
+      selectedPeopleForPdf.add(personId);
+    }
+    renderSelectPeopleModalList();
+  }
+
+  function toggleSelectRoomModalPeople(roomName) {
+    const roomList = rooms[roomName] || [];
+    if (roomList.length === 0) return;
+    const allSelected = roomList.every(p => selectedPeopleForPdf.has(p.id));
+    roomList.forEach(p => {
+      if (allSelected) selectedPeopleForPdf.delete(p.id);
+      else selectedPeopleForPdf.add(p.id);
+    });
+    renderSelectPeopleModalList();
+  }
+
+  function toggleSelectAllModalPeople(selectAll) {
+    if (!selectAll) {
+      selectedPeopleForPdf.clear();
+      renderSelectPeopleModalList();
+      return;
+    }
+    const query = (document.getElementById('searchModalPeople').value || '').trim().toLowerCase();
+    const all = getAllOrderedPeople();
+    all.forEach(p => {
+      const match = !query ||
+        String(p.nome || '').toLowerCase().includes(query) ||
+        String(p.inscricao || '').toLowerCase().includes(query) ||
+        String(p.sala || '').toLowerCase().includes(query);
+      if (match) selectedPeopleForPdf.add(p.id);
+    });
+    renderSelectPeopleModalList();
+  }
+
+  function renderSelectPeopleModalList() {
+    const container = document.getElementById('selectPeopleModalList');
+    const query = (document.getElementById('searchModalPeople').value || '').trim().toLowerCase();
+    const roomKeys = Object.keys(rooms).sort();
+    let html = '';
+
+    const matchesQuery = (p) => {
+      if (!query) return true;
+      return String(p.nome || '').toLowerCase().includes(query) ||
+             String(p.inscricao || '').toLowerCase().includes(query) ||
+             String(p.sala || '').toLowerCase().includes(query);
+    };
+
+    if (roomKeys.length > 0) {
+      roomKeys.forEach(rName => {
+        const filtered = (rooms[rName] || []).filter(matchesQuery);
+        if (filtered.length === 0) return;
+        const rColor = roomColors[rName] || '#000000';
+        const allRoomSelected = filtered.every(p => selectedPeopleForPdf.has(p.id));
+        html += `
+          <div class="select-room-group">
+            <div class="select-room-header" style="border-left: 6px solid ${rColor};">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:${rColor}; border:1px solid rgba(255,255,255,0.3);"></span>
+                <span>${rName} (${filtered.length})</span>
+              </div>
+              <button type="button" class="room-action-btn" onclick="toggleSelectRoomModalPeople('${rName}')">
+                ${allRoomSelected ? 'Desmarcar Sala' : 'Marcar Sala'}
+              </button>
+            </div>
+            ${filtered.map(p => {
+              const checked = selectedPeopleForPdf.has(p.id) ? 'checked' : '';
+              return `
+                <div class="select-person-row" onclick="togglePersonPdfSelection('${p.id}')">
+                  <input type="checkbox" ${checked} onclick="event.stopPropagation(); togglePersonPdfSelection('${p.id}')">
+                  <span style="font-weight:bold; min-width:45px; color:var(--accent);">${p.inscricao}</span>
+                  <span style="flex:1;">${p.nome}</span>
+                  <span style="font-size:10px; padding:2px 8px; border-radius:4px; background:var(--surface); border-left:4px solid ${rColor}; color:var(--muted);">${rName}</span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      });
+    } else {
+      const filtered = people.filter(matchesQuery);
+      if (filtered.length > 0) {
+        html += `<div class="select-room-group">`;
+        filtered.forEach(p => {
+          const checked = selectedPeopleForPdf.has(p.id) ? 'checked' : '';
+          const pColor = p.color || '#000000';
+          html += `
+            <div class="select-person-row" onclick="togglePersonPdfSelection('${p.id}')">
+              <input type="checkbox" ${checked} onclick="event.stopPropagation(); togglePersonPdfSelection('${p.id}')">
+              <span style="font-weight:bold; min-width:45px; color:var(--accent);">${p.inscricao}</span>
+              <span style="flex:1;">${p.nome}</span>
+              <span style="display:inline-block; width:14px; height:14px; border-radius:3px; background:${pColor}; border:1px solid var(--border);"></span>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+    }
+
+    if (!html) {
+      html = `<div style="text-align:center; color:var(--muted); padding:30px;">Nenhum participante encontrado para a busca.</div>`;
+    }
+    container.innerHTML = html;
+    document.getElementById('selectedPeopleCountInfo').innerText = `${selectedPeopleForPdf.size} participante(s) selecionado(s)`;
+  }
+
+  async function generateSelectedPeoplePDF() {
+    if (selectedPeopleForPdf.size === 0) {
+      return alert("Marque pelo menos um participante para gerar o PDF.");
+    }
+    const all = getAllOrderedPeople();
+    const chosen = all.filter(p => selectedPeopleForPdf.has(p.id));
+    if (chosen.length === 0) {
+      return alert("Nenhum participante válido selecionado.");
+    }
+    closeSelectPeopleModal();
+    await generateFinalPDF(chosen);
+  }
+
+  async function generateFinalPDF(customPeopleList = null) {
+    if(people.length === 0) return alert("Carregue os participantes primeiro.");
+    let sortedPeople = Array.isArray(customPeopleList) ? customPeopleList : getAllOrderedPeople();
+    if (sortedPeople.length === 0) return alert("Nenhum participante encontrado nas salas.");
+
+    // Garante que o palco (#viewEditor / #stage) esteja visível no DOM para o html2canvas capturar mesmo se o usuário estiver na Aba 1
+    const viewEditor = document.getElementById('viewEditor');
+    const wasHidden = viewEditor.classList.contains('hidden');
+    if (wasHidden) {
+      viewEditor.classList.remove('hidden');
+      viewEditor.style.position = 'fixed';
+      viewEditor.style.left = '-9999px';
+      viewEditor.style.top = '0';
+      viewEditor.style.width = '1200px';
+      viewEditor.style.height = '900px';
+      viewEditor.style.zIndex = '-1';
+    }
+    relayout();
+
+    // Se o usuário ainda não inseriu nenhum elemento no Designer, cria um texto padrão centralizado para não gerar crachás vazios
+    if (document.querySelectorAll('#stage .item').length === 0) {
+      addText();
+      centerElement('h');
+      centerElement('v');
+      deselectAll();
+    } else {
+      deselectAll();
+    }
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const orientation = document.getElementById('pdfOrient').value;
+      const doc = new jsPDF({ unit:'cm', format:'a4', orientation });
+      const bw = parseFloat(document.getElementById('badgeW').value); 
+      const bh = parseFloat(document.getElementById('badgeH').value);
+      const rawGap = parseFloat(document.getElementById('pdfGap').value);
+      const gap = (document.getElementById('pdfGapMode').value === 'noGap' || isNaN(rawGap) || rawGap < 0) ? 0 : rawGap;
+      const rawMargin = parseFloat(document.getElementById('pdfMargin').value);
+      const margin = (isNaN(rawMargin) || rawMargin < 0) ? 0 : rawMargin;
+      const cropMarks = document.getElementById('pdfCropMarks').checked;
+      const bgColor = document.getElementById('badgeBgColor').value;
+      const a4w = doc.internal.pageSize.getWidth(); 
+      const a4h = doc.internal.pageSize.getHeight();
+      const cols = Math.max(1, Math.floor((a4w - 2*margin + gap) / (bw + gap))); 
+      const rows = Math.max(1, Math.floor((a4h - 2*margin + gap) / (bh + gap)));
+      const perPage = cols * rows; 
+      const copies = Math.max(1, parseInt(document.getElementById('printCopies').value, 10) || 1);
+      let total = 0;
+      let pageBadges = [];
+      for (let p of sortedPeople) {
+        const borderColor = p.color || (p.sala && roomColors[p.sala]) || '#000000';
+        document.getElementById('stage').style.borderColor = borderColor;
+        document.getElementById('stage').style.backgroundColor = bgColor;
+        document.querySelectorAll('.item.text').forEach(node => { 
+          let texto = node.dataset.text
+            .replaceAll('{{INSCRICAO}}', p.inscricao)
+            .replaceAll('{{NOME}}', p.nome)
+            .replaceAll('{{SALA}}', p.sala);
+          const span = node.querySelector('span');
+          span.innerText = texto;
+          if (node.dataset.underline === "true") { span.style.textDecoration = "none"; span.style.borderBottom = `2px solid ${span.style.color}`; span.style.paddingBottom = "2px"; } else { span.style.borderBottom = "none"; span.style.paddingBottom = "0"; }
+          span.style.textAlign = node.dataset.align || "center";
+          if(node.dataset.align === "justify") span.style.textAlignLast = "center";
+        });
+        const qrItems = document.querySelectorAll('.item.qrcode');
+        for(let qrNode of qrItems) { qrNode.innerHTML = ''; new QRCode(qrNode, { text: String(p.inscricao), width: qrNode.offsetWidth, height: qrNode.offsetHeight }); }
+        const canvas = await html2canvas(document.getElementById('stage'), { scale: 2, backgroundColor: bgColor });
+        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+        for (let c = 0; c < copies; c++) {
+          if(total > 0 && total % perPage === 0) {
+            if(cropMarks) drawPageCropMarks(doc, pageBadges, bw, bh, gap);
+            pageBadges = [];
+            doc.addPage();
+          }
+          const idx = total % perPage;
+          const x = margin + (idx % cols) * (bw + gap); 
+          const y = margin + Math.floor(idx / cols) * (bh + gap);
+          doc.addImage(imgData, 'JPEG', x, y, bw, bh);
+          pageBadges.push({ x, y });
+          total++;
+        }
+      }
+      if(cropMarks && pageBadges.length > 0) {
+        drawPageCropMarks(doc, pageBadges, bw, bh, gap);
+      }
+      doc.save('Crachas_Shekinah_Pro_Organizado.pdf');
+    } finally {
+      // Restaurar estado original do palco (placeholders) e visibilidade da aba
+      document.getElementById('stage').style.borderColor = '#000000';
+      document.querySelectorAll('.item.text').forEach(node => {
+        const span = node.querySelector('span');
+        if (span) span.innerText = node.dataset.text;
+      });
+      document.querySelectorAll('.item.qrcode').forEach(qrNode => {
+        qrNode.innerHTML = `<div class="qr-placeholder" style="width:100%; height:100%; background:#eee; display:flex; align-items:center; justify-content:center; font-size:10px; border:1px solid #ccc; text-align:center;">QR CODE AUTO</div>`;
+      });
+      if (wasHidden) {
+        viewEditor.classList.add('hidden');
+        viewEditor.style.position = '';
+        viewEditor.style.left = '';
+        viewEditor.style.top = '';
+        viewEditor.style.width = '';
+        viewEditor.style.height = '';
+        viewEditor.style.zIndex = '';
+      }
+    }
   }
 
   function saveToLocalStorage() {
     const items = Array.from(document.querySelectorAll('.item')).map(it => ({ id: it.id, type: it.dataset.type, x: parseInt(it.style.left), y: parseInt(it.style.top), w: parseInt(it.style.width), h: parseInt(it.style.height), text: it.dataset.text||'', src: it.dataset.src||'', font: it.querySelector('span')?.style.fontFamily||'', size: it.querySelector('span')?.style.fontSize||'', color: it.querySelector('span')?.style.color||'', underline: it.dataset.underline === "true", align: it.dataset.align || "center" }));
-    const project = { theme: document.body.classList.contains('light-mode') ? 'light' : 'dark', badgeW: document.getElementById('badgeW').value, badgeH: document.getElementById('badgeH').value, borderSize: document.getElementById('borderSize').value, badgeBgColor: document.getElementById('badgeBgColor').value, people, rooms, roomColors, roomLideres, items };
+    const project = {
+      theme: document.body.classList.contains('light-mode') ? 'light' : 'dark',
+      badgeW: document.getElementById('badgeW').value,
+      badgeH: document.getElementById('badgeH').value,
+      borderSize: document.getElementById('borderSize').value,
+      badgeBgColor: document.getElementById('badgeBgColor').value,
+      pdfOrient: document.getElementById('pdfOrient').value,
+      pdfGapMode: document.getElementById('pdfGapMode').value,
+      pdfGap: document.getElementById('pdfGap').value,
+      pdfMargin: document.getElementById('pdfMargin').value,
+      pdfCropMarks: document.getElementById('pdfCropMarks').checked,
+      roomPrefix: document.getElementById('roomPrefix').value,
+      roomCapacity: document.getElementById('roomCapacity').value,
+      totalRoomsTarget: document.getElementById('totalRoomsTarget').value,
+      people, rooms, roomColors, roomLideres, items
+    };
     localStorage.setItem('shekinah_pro_project', JSON.stringify(project));
     document.getElementById('autoSaveStatus').innerText = "Projeto salvo localmente às " + new Date().toLocaleTimeString();
   }
@@ -811,6 +1373,15 @@
     document.getElementById('badgeH').value = data.badgeH || 7;
     document.getElementById('borderSize').value = data.borderSize || 0.4;
     document.getElementById('badgeBgColor').value = data.badgeBgColor || "#ffffff";
+    if (data.pdfOrient) document.getElementById('pdfOrient').value = data.pdfOrient;
+    if (data.pdfGap !== undefined) document.getElementById('pdfGap').value = data.pdfGap;
+    if (data.pdfGapMode) document.getElementById('pdfGapMode').value = data.pdfGapMode;
+    else syncPdfGapInput();
+    if (data.pdfMargin !== undefined) document.getElementById('pdfMargin').value = data.pdfMargin;
+    if (data.pdfCropMarks !== undefined) document.getElementById('pdfCropMarks').checked = Boolean(data.pdfCropMarks);
+    if (data.roomPrefix) document.getElementById('roomPrefix').value = data.roomPrefix;
+    if (data.roomCapacity) document.getElementById('roomCapacity').value = data.roomCapacity;
+    if (data.totalRoomsTarget) document.getElementById('totalRoomsTarget').value = data.totalRoomsTarget;
     people = data.people || []; rooms = data.rooms || {}; roomColors = data.roomColors || {}; roomLideres = data.roomLideres || {};
     document.getElementById('stage').innerHTML = "";
     (data.items||[]).forEach(it => {
