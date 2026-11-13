@@ -120,6 +120,16 @@
     .room-action-btn:hover { border-color: var(--accent); color: var(--accent); }
     .room-action-btn.danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
 
+    /* Estilos da Aba de Etiquetas */
+    .labels-workspace { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px; overflow-y: auto; height: 100%; background: var(--surface); }
+    .labels-preview-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px; width: 100%; max-width: 820px; box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+    .labels-single-preview-wrap { display: flex; justify-content: center; align-items: center; padding: 16px; background: var(--surface); border-radius: 10px; border: 1px dashed var(--border); min-height: 110px; }
+    .labels-sheet-preview-wrap { display: flex; justify-content: center; align-items: center; padding: 20px; background: var(--surface); border-radius: 10px; border: 1px solid var(--border); overflow: auto; }
+    .sheet-paper { background: #ffffff; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.35); border: 1px solid #cbd5e1; flex-shrink: 0; }
+    .sheet-label-cell { position: absolute; box-sizing: border-box; border: 1px dashed #94a3b8; border-radius: 2px; overflow: hidden; display: flex; align-items: center; background: #ffffff; color: #0f172a; font-family: Arial, sans-serif; }
+    .sheet-label-cell.skipped { background: repeating-linear-gradient(45deg, #f1f5f9, #f1f5f9 4px, #e2e8f0 4px, #e2e8f0 8px); opacity: 0.65; border-color: #cbd5e1; }
+    .badge-pill { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: bold; background: var(--highlight); color: var(--accent); border: 1px solid var(--accent); }
+
     /* Estilos do Manual Customizado */
     .manual-container { padding: 40px; overflow-y: auto; height: 100%; background: var(--surface); line-height: 1.6; color: var(--panel-fg); }
     .manual-content { max-width: 900px; margin: 0 auto; background: var(--card); padding: 40px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -143,8 +153,9 @@
   
   <div class="tabs">
     <button class="tab-btn active" id="tabRooms" onclick="switchTab('rooms')">1. DADOS & SALAS</button>
-    <button class="tab-btn" id="tabEditor" onclick="switchTab('editor')">2. DESIGNER</button>
-    <button class="tab-btn" id="tabManual" onclick="switchTab('manual')">3. MANUAL DE UTILIZAÇÃO</button>
+    <button class="tab-btn" id="tabEditor" onclick="switchTab('editor')">2. DESIGNER (CRACHÁS)</button>
+    <button class="tab-btn" id="tabLabels" onclick="switchTab('labels')">3. ETIQUETAS</button>
+    <button class="tab-btn" id="tabManual" onclick="switchTab('manual')">4. MANUAL DE UTILIZAÇÃO</button>
   </div>
   
   <div style="display:flex; gap:8px;">
@@ -317,6 +328,117 @@
             <button class="btn danger" style="width:100%" onclick="deleteItem()">Remover Elemento</button>
         </div>
     </div>
+
+    <div id="labelTools" class="hidden">
+        <div class="panel-section">
+            <div class="section-title">🏷️ Padrão da Folha de Etiquetas</div>
+            <label>Modelo Oficial (Pimaco / Colacril / Jato de Tinta & Laser)</label>
+            <select id="labelPresetSelect" onchange="applyLabelPreset(this.value)">
+                <optgroup label="⭐ 20 Etiquetas por Folha (Mais Usados)">
+                    <option value="pimaco_6181_20">20/folha — Pimaco 6181 / 6081 / 6281 (Carta • 2×10 • 101,6×25,4 mm)</option>
+                    <option value="a4_20_padrao">20/folha — Padrão A4 (A4 • 2×10 • 99,0×27,0 mm)</option>
+                </optgroup>
+                <optgroup label="📄 Padrões em Folha Carta (215,9 × 279,4 mm)">
+                    <option value="pimaco_6184_6">6/folha — Pimaco 6184 / 6084 (Carta • 2×3 • 101,6×84,7 mm)</option>
+                    <option value="pimaco_6183_10">10/folha — Pimaco 6183 / 6083 (Carta • 2×5 • 101,6×50,8 mm)</option>
+                    <option value="pimaco_6182_14">14/folha — Pimaco 6182 / 6082 (Carta • 2×7 • 101,6×33,9 mm)</option>
+                    <option value="pimaco_6180_30">30/folha — Pimaco 6180 / 6080 / 6280 (Carta • 3×10 • 66,7×25,4 mm)</option>
+                </optgroup>
+                <optgroup label="📄 Padrões em Folha A4 (210,0 × 297,0 mm)">
+                    <option value="pimaco_a4364_12">12/folha — Pimaco A4364 / A4264 (A4 • 3×4 • 63,5×71,9 mm)</option>
+                    <option value="pimaco_a4363_14">14/folha — Pimaco A4363 / A4263 (A4 • 2×7 • 99,0×38,1 mm)</option>
+                    <option value="pimaco_a4362_16">16/folha — Pimaco A4362 / A4262 (A4 • 2×8 • 99,0×33,9 mm)</option>
+                    <option value="pimaco_a4361_18">18/folha — Pimaco A4361 / A4261 (A4 • 3×6 • 63,5×46,5 mm)</option>
+                    <option value="pimaco_a4360_21">21/folha — Pimaco A4360 / A4260 (A4 • 3×7 • 63,5×38,1 mm)</option>
+                    <option value="pimaco_a4354_22">22/folha — Pimaco A4354 / A4254 (A4 • 2×11 • 99,0×25,4 mm)</option>
+                    <option value="a4_24_padrao">24/folha — Padrão A4 (A4 • 3×8 • 63,5×33,9 mm)</option>
+                    <option value="pimaco_a4355_27">27/folha — Pimaco A4355 / A4255 (A4 • 3×9 • 63,5×31,0 mm)</option>
+                    <option value="pimaco_a4356_33">33/folha — Pimaco A4356 / A4256 (A4 • 3×11 • 63,5×25,4 mm)</option>
+                </optgroup>
+                <optgroup id="customSavedPresetsGroup" label="💾 Meus Padrões Salvos"></optgroup>
+                <optgroup label="⚙️ Configuração Manual">
+                    <option value="custom">⚙️ Personalizado (Medidas Livres)</option>
+                </optgroup>
+            </select>
+            <div style="display:flex; gap:6px; margin-top:8px;">
+                <button type="button" class="btn outline" style="flex:1; margin-top:0; font-size:11px; padding:7px;" onclick="saveCustomLabelPreset()">💾 Salvar Meu Padrão</button>
+                <button type="button" id="btnDeleteCustomPreset" class="btn danger outline hidden" style="margin-top:0; font-size:11px; padding:7px;" onclick="deleteCurrentCustomPreset()">🗑️</button>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">📐 Medidas da Folha e Etiqueta (mm)</div>
+            <label>Tamanho do Papel</label>
+            <select id="labelPaperSize" onchange="onLabelPaperSizeChange()">
+                <option value="letter">Carta / Letter (215,9 × 279,4 mm)</option>
+                <option value="a4">A4 (210,0 × 297,0 mm)</option>
+                <option value="custom">Personalizado (mm)</option>
+            </select>
+            <div id="customPaperDimsBox" class="grid2 hidden">
+                <div><label>Larg. Folha (mm)</label><input id="labelPageW" type="number" step="0.1" value="215.9" oninput="onLabelCustomDimensionEdit()"></div>
+                <div><label>Alt. Folha (mm)</label><input id="labelPageH" type="number" step="0.1" value="279.4" oninput="onLabelCustomDimensionEdit()"></div>
+            </div>
+
+            <div class="grid2">
+                <div><label>Colunas / Folha</label><input id="labelCols" type="number" min="1" max="10" value="2" oninput="onLabelCustomDimensionEdit()"></div>
+                <div><label>Linhas / Folha</label><input id="labelRows" type="number" min="1" max="30" value="10" oninput="onLabelCustomDimensionEdit()"></div>
+            </div>
+            <div class="grid2">
+                <div><label>Larg. Etiqueta (mm)</label><input id="labelW" type="number" step="0.1" min="10" value="101.6" oninput="onLabelCustomDimensionEdit()"></div>
+                <div><label>Alt. Etiqueta (mm)</label><input id="labelH" type="number" step="0.1" min="8" value="25.4" oninput="onLabelCustomDimensionEdit()"></div>
+            </div>
+            <div class="grid2">
+                <div><label>Margem Sup. (mm)</label><input id="labelMarginTop" type="number" step="0.1" min="0" value="12.7" oninput="onLabelCustomDimensionEdit()"></div>
+                <div><label>Margem Esq. (mm)</label><input id="labelMarginLeft" type="number" step="0.1" min="0" value="4.0" oninput="onLabelCustomDimensionEdit()"></div>
+            </div>
+            <div class="grid2">
+                <div><label>Espaço Horiz. (mm)</label><input id="labelGapX" type="number" step="0.1" min="0" value="5.2" oninput="onLabelCustomDimensionEdit()"></div>
+                <div><label>Espaço Vert. (mm)</label><input id="labelGapY" type="number" step="0.1" min="0" value="0.0" oninput="onLabelCustomDimensionEdit()"></div>
+            </div>
+            <button type="button" class="btn outline" style="width:100%; font-size:11px; padding:7px;" onclick="autoCalculateLabelMargins()">🪄 Centralizar Margens Automaticamente</button>
+        </div>
+
+        <div class="panel-section">
+            <div class="section-title">✍️ Conteúdo e Estilo da Etiqueta</div>
+            <label>Linha 1 (Principal)</label>
+            <input type="text" id="labelLine1Text" value="{{INSCRICAO}} - {{NOME}}" placeholder="Ex: {{INSCRICAO}} - {{NOME}}" oninput="updateLabelsPreview()">
+            <div class="grid2">
+                <div><label>Tam. Fonte L1 (pt)</label><input type="number" id="labelLine1Size" value="11" min="5" max="36" oninput="updateLabelsPreview()"></div>
+                <div><label>Cor Texto L1</label><input type="color" id="labelLine1Color" value="#000000" oninput="updateLabelsPreview()"></div>
+            </div>
+
+            <label>Linha 2 (Secundária — Sala / Líder / Evento)</label>
+            <input type="text" id="labelLine2Text" value="{{SALA}}" placeholder="Ex: {{SALA}} (deixe vazio p/ ocultar)" oninput="updateLabelsPreview()">
+            <div class="grid2">
+                <div><label>Tam. Fonte L2 (pt)</label><input type="number" id="labelLine2Size" value="9" min="5" max="28" oninput="updateLabelsPreview()"></div>
+                <div><label>Cor Texto L2</label><input type="color" id="labelLine2Color" value="#333333" oninput="updateLabelsPreview()"></div>
+            </div>
+
+            <div class="grid2">
+                <div>
+                    <label>Alinhamento Texto</label>
+                    <select id="labelTextAlign" onchange="updateLabelsPreview()">
+                        <option value="center">Centralizado</option>
+                        <option value="left">À Esquerda</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Indicador Cor da Sala</label>
+                    <select id="labelColorStyle" onchange="updateLabelsPreview()">
+                        <option value="stripe">Faixa Lateral Colorida</option>
+                        <option value="border">Borda Colorida</option>
+                        <option value="pill">Tarja na Linha 2</option>
+                        <option value="none">Sem Cor (P&B / Econômico)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="labelShowQR" onchange="updateLabelsPreview()" style="width: auto; margin-top: 0;">
+                <label style="margin-top: 0; text-transform: none;">Incluir QR Code da Inscrição na Etiqueta</label>
+            </div>
+        </div>
+    </div>
   </aside>
 
   <main id="mainView" style="overflow: hidden; height: 100%;">
@@ -331,10 +453,37 @@
           <div id="snap-h-center" class="snap-line snap-h"></div>
           <div id="snap-v-center" class="snap-line snap-v"></div>
       </div>
+      <div id="viewLabels" class="labels-workspace hidden">
+          <div class="labels-preview-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                  <div>
+                      <div class="section-title" style="margin-bottom:2px;">🔍 Pré-visualização da Etiqueta Individual</div>
+                      <div id="labelSingleSpecsInfo" style="font-size:11px; color:var(--muted);">101,6 × 25,4 mm • 20 etiquetas por folha</div>
+                  </div>
+                  <span id="labelTotalPerSheetBadge" class="badge-pill">20 etiquetas / folha</span>
+              </div>
+              <div class="labels-single-preview-wrap">
+                  <div id="singleLabelPreviewBox"></div>
+              </div>
+          </div>
+
+          <div class="labels-preview-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                  <div>
+                      <div class="section-title" style="margin-bottom:2px;">📄 Mapa de Distribuição na Folha (1ª Página)</div>
+                      <div id="labelSheetSummaryInfo" style="font-size:11px; color:var(--muted);">Folha Carta (215,9 × 279,4 mm) • 2 colunas × 10 linhas</div>
+                  </div>
+                  <span id="labelPagesNeededBadge" class="badge-pill">1 folha necessária</span>
+              </div>
+              <div class="labels-sheet-preview-wrap">
+                  <div id="sheetPaperPreview" class="sheet-paper"></div>
+              </div>
+          </div>
+      </div>
       <div id="viewManual" class="manual-container hidden">
           <div class="manual-content">
               <h1>📘 Shekinah Pro — Manual Completo de Utilização</h1>
-              <p>O sistema é dividido em três abas principais: <strong>1. DADOS & SALAS</strong> (Logística e Participantes), <strong>2. DESIGNER</strong> (Criação visual do crachá) e <strong>3. MANUAL DE UTILIZAÇÃO</strong> (Guia completo).</p>
+              <p>O sistema é dividido em quatro abas principais: <strong>1. DADOS & SALAS</strong> (Logística e Participantes), <strong>2. DESIGNER (CRACHÁS)</strong> (Criação visual do crachá), <strong>3. ETIQUETAS</strong> (Impressão em folhas de etiquetas adesivas Jato de Tinta e Laser) e <strong>4. MANUAL DE UTILIZAÇÃO</strong> (Guia completo).</p>
               
               <h2>1. Gestão de Participantes e Salas (Aba 1)</h2>
               <p>Esta aba é o coração da organização do seu evento, permitindo gerenciar listas completas ou montar salas manualmente do zero.</p>
@@ -434,6 +583,17 @@
                   <li><strong>Auto-Save e Backup JSON:</strong> Todas as alterações são salvas automaticamente no navegador a cada 5 segundos. Use <strong>Exportar JSON</strong> no topo da tela para salvar um arquivo completo de backup no seu computador e <strong>Importar</strong> quando quiser restaurá-lo.</li>
               </ul>
 
+              <h2>6. Impressão em Folhas de Etiquetas Adesivas (Aba 3)</h2>
+              <p>A aba <strong>3. ETIQUETAS</strong> foi projetada para impressão milimétrica em folhas de etiquetas adesivas (Jato de Tinta ou Laser):</p>
+              <ul>
+                  <li><strong>Catálogo de Padrões Oficiais (Pimaco / Colacril / A4 e Carta):</strong> Escolha com 1 clique entre os principais formatos do mercado, incluindo o padrão de <strong>20 etiquetas por folha (Pimaco 6181 / 6081 / 6281 em Carta ou Padrão A4 2×10)</strong>, além de folhas de <strong>6, 10, 12, 14, 16, 18, 21, 22, 24, 27, 30 e 33 etiquetas por folha</strong>.</li>
+                  <li><strong>Personalização Completa de Medidas (mm):</strong> Além dos padrões prontos, você pode personalizar livremente o tamanho do papel (Carta, A4 ou medida customizada), quantidade de colunas e linhas, largura e altura da etiqueta (mm), margens superior/esquerda e espaçamentos horizontal/vertical. Você também pode clicar em <strong>💾 Salvar Meu Padrão</strong> para deixar suas medidas salvas no menu!</li>
+                  <li><strong>Conteúdo, Cor da Sala e QR Code:</strong> Configure até duas linhas de texto dinâmico (<code>{{INSCRICAO}}</code>, <code>{{NOME}}</code>, <code>{{SALA}}</code>, <code>{{LIDER}}</code>), escolha se deseja exibir a <strong>Cor da Sala</strong> (Faixa Lateral, Borda Colorida, Tarja ou P&B Econômico) e ative opcionalmente o <strong>QR Code</strong>.</li>
+                  <li><strong>Reaproveitamento de Folha Parcialmente Usada:</strong> No campo <strong>Iniciar Impressão na Etiqueta Nº</strong>, informe a partir de qual etiqueta deve começar a impressão na 1ª folha (ex.: se as 4 primeiras etiquetas da folha já foram destacadas, digite <strong>5</strong> para começar na 5ª posição!).</li>
+                  <li><strong>Ajuste Fino de Impressora (Deslocamento X e Y):</strong> Compense variações de puxada de papel da sua impressora Jato de Tinta sem precisar alterar as medidas da etiqueta, e use a opção de <strong>contorno guia</strong> para testar o alinhamento em folha sulfite comum antes de imprimir no adesivo.</li>
+                  <li><strong>Impressão Total ou Seletiva:</strong> Gere etiquetas para todos os participantes (<strong>🖨️ GERAR ETIQUETAS (TODOS)</strong>) ou apenas para nomes selecionados (<strong>🎯 ESCOLHER NOMES P/ ETIQUETAS</strong>).</li>
+              </ul>
+
               <h2>🗑️ Dicas de Manutenção do Projeto</h2>
               <ul>
                   <li><strong>Limpar Dados (Manter Design):</strong> Apaga todos os nomes e salas para começar um novo evento, mas preserva todo o layout visual, fontes e logotipos criados no Designer.</li>
@@ -444,40 +604,74 @@
   </main>
 
   <aside class="side-panel right" id="rightPanel">
-      <div class="panel-section">
-          <div class="section-title">📑 Camadas (Layers)</div>
-          <div id="layersList" style="max-height: 300px; overflow-y: auto;">
-              <div style="text-align: center; color: var(--muted); font-size: 11px; padding: 20px;">Sem elementos</div>
+      <div id="rightBadgeTools">
+          <div class="panel-section">
+              <div class="section-title">📑 Camadas (Layers)</div>
+              <div id="layersList" style="max-height: 300px; overflow-y: auto;">
+                  <div style="text-align: center; color: var(--muted); font-size: 11px; padding: 20px;">Sem elementos</div>
+              </div>
+          </div>
+
+          <div class="panel-section">
+              <div class="section-title">🚀 Finalizar PDF (Crachás)</div>
+              <label>Orientação da Folha</label>
+              <select id="pdfOrient">
+                  <option value="portrait">Retrato (A4)</option>
+                  <option value="landscape">Paisagem (A4)</option>
+              </select>
+              <label>Espaçamento entre Crachás</label>
+              <select id="pdfGapMode" onchange="togglePdfGapMode()">
+                  <option value="withGap">Com Espaço entre Crachás</option>
+                  <option value="noGap">Sem Espaço (Colados / 0 cm)</option>
+              </select>
+              <div class="grid2">
+                  <div><label>Margem (cm)</label><input id="pdfMargin" type="number" value="0.2" min="0" step="0.1"></div>
+                  <div id="pdfGapContainer"><label>Espaço (cm)</label><input id="pdfGap" type="number" value="0.5" min="0" step="0.1" oninput="syncPdfGapInput()"></div>
+              </div>
+              <label>Cópias por Pessoa</label>
+              <input type="number" id="printCopies" value="1" min="1">
+              
+              <div style="margin-top: 10px;">
+                  <input type="checkbox" id="pdfCropMarks" checked style="width: auto; margin-right: 5px;">
+                  <label style="display: inline; text-transform: none;">Incluir Marcas de Corte</label>
+                  <p style="font-size: 9px; color: var(--muted); margin: 4px 0 0 0; line-height: 1.3;">Sem espaço (0 cm), a marca de corte faz a separação vertical e horizontal entre os crachás.</p>
+              </div>
+              
+              <button class="btn secondary" style="width:100%; height:46px; margin-top:15px; font-size: 13px;" onclick="generateFinalPDF()">GERAR PDF (TODOS)</button>
+              <button class="btn outline" style="width:100%; height:40px; margin-top:8px; font-size: 12px; border-color: var(--accent); color: var(--accent);" onclick="openSelectPeopleModal('badges')">🎯 ESCOLHER NOMES P/ PDF</button>
           </div>
       </div>
 
-      <div class="panel-section">
-          <div class="section-title">🚀 Finalizar PDF</div>
-          <label>Orientação da Folha</label>
-          <select id="pdfOrient">
-              <option value="portrait">Retrato (A4)</option>
-              <option value="landscape">Paisagem (A4)</option>
-          </select>
-          <label>Espaçamento entre Crachás</label>
-          <select id="pdfGapMode" onchange="togglePdfGapMode()">
-              <option value="withGap">Com Espaço entre Crachás</option>
-              <option value="noGap">Sem Espaço (Colados / 0 cm)</option>
-          </select>
-          <div class="grid2">
-              <div><label>Margem (cm)</label><input id="pdfMargin" type="number" value="0.2" min="0" step="0.1"></div>
-              <div id="pdfGapContainer"><label>Espaço (cm)</label><input id="pdfGap" type="number" value="0.5" min="0" step="0.1" oninput="syncPdfGapInput()"></div>
+      <div id="rightLabelTools" class="hidden">
+          <div class="panel-section">
+              <div class="section-title">♻️ Reaproveitamento de Folha</div>
+              <label>Iniciar Impressão na Etiqueta Nº</label>
+              <input type="number" id="labelStartPos" value="1" min="1" max="100" oninput="updateLabelsPreview()">
+              <p style="font-size: 9px; color: var(--muted); margin-top: 4px; line-height: 1.3;">Se sua primeira folha já teve etiquetas destacadas (ex: 4 usadas), digite <b>5</b> para começar a imprimir a partir da 5ª etiqueta.</p>
+
+              <label>Cópias por Participante</label>
+              <input type="number" id="labelCopies" value="1" min="1" max="50" oninput="updateLabelsPreview()">
           </div>
-          <label>Cópias por Pessoa</label>
-          <input type="number" id="printCopies" value="1" min="1">
-          
-          <div style="margin-top: 10px;">
-              <input type="checkbox" id="pdfCropMarks" checked style="width: auto; margin-right: 5px;">
-              <label style="display: inline; text-transform: none;">Incluir Marcas de Corte</label>
-              <p style="font-size: 9px; color: var(--muted); margin: 4px 0 0 0; line-height: 1.3;">Sem espaço (0 cm), a marca de corte faz a separação vertical e horizontal entre os crachás.</p>
+
+          <div class="panel-section">
+              <div class="section-title">🖨️ Ajuste Fino de Impressora</div>
+              <div class="alert-box" style="margin-top:0;">Compense pequenas variações de puxada de papel da sua impressora Jato de Tinta ou Laser (em mm):</div>
+              <div class="grid2">
+                  <div><label>Desloc. Horiz. X (mm)</label><input type="number" id="labelOffsetX" value="0" step="0.2" oninput="updateLabelsPreview()"></div>
+                  <div><label>Desloc. Vert. Y (mm)</label><input type="number" id="labelOffsetY" value="0" step="0.2" oninput="updateLabelsPreview()"></div>
+              </div>
+              <div style="margin-top: 10px; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" id="labelDrawOutline" style="width: auto; margin-top: 0;" onchange="updateLabelsPreview()">
+                  <label style="margin-top: 0; text-transform: none;">Imprimir contorno guia (p/ teste em folha sulfite)</label>
+              </div>
+              <p style="font-size: 9px; color: var(--muted); margin-top: 6px; line-height: 1.3;">💡 <b>Dica Jato de Tinta:</b> Na janela de impressão do leitor de PDF, selecione sempre <b>"Tamanho Real" (Escala 100%)</b> e o papel correto (Carta ou A4).</p>
           </div>
-          
-          <button class="btn secondary" style="width:100%; height:46px; margin-top:15px; font-size: 13px;" onclick="generateFinalPDF()">GERAR PDF (TODOS)</button>
-          <button class="btn outline" style="width:100%; height:40px; margin-top:8px; font-size: 12px; border-color: var(--accent); color: var(--accent);" onclick="openSelectPeopleModal()">🎯 ESCOLHER NOMES P/ PDF</button>
+
+          <div class="panel-section">
+              <div class="section-title">🚀 Exportar Etiquetas (PDF)</div>
+              <button class="btn secondary" style="width:100%; height:46px; font-size: 13px;" onclick="generateLabelsPDF()">🖨️ GERAR ETIQUETAS (TODOS)</button>
+              <button class="btn outline" style="width:100%; height:40px; margin-top:8px; font-size: 12px; border-color: var(--accent); color: var(--accent);" onclick="openSelectPeopleModal('labels')">🎯 ESCOLHER NOMES P/ ETIQUETAS</button>
+          </div>
       </div>
 
       <div class="panel-section" style="margin-top: auto;">
@@ -522,13 +716,34 @@
   let selectedElement = null;
   let editingPersonId = null;
   let selectedPeopleForPdf = new Set();
+  let modalPdfTarget = 'badges';
+  let customLabelPresets = {};
   let directBadgeColorMode = 'single';
   let directBadgeSingleColor = '#000000';
   const quickColors = ['#FFFF00', '#FF0000', '#0000FF', '#00FF00', '#FFA500', '#FF00FF', '#00FFFF', '#808080', '#000000', '#FFFFFF', '#800080', '#A52A2A'];
 
+  const LABEL_PRESETS = {
+    pimaco_6181_20: { paper: 'letter', pageW: 215.9, pageH: 279.4, cols: 2, rows: 10, w: 101.6, h: 25.4, mTop: 12.7, mLeft: 4.0, gapX: 5.2, gapY: 0.0 },
+    a4_20_padrao:   { paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 2, rows: 10, w: 99.0,  h: 27.0, mTop: 13.5, mLeft: 4.7, gapX: 2.6, gapY: 0.0 },
+    pimaco_6184_6:  { paper: 'letter', pageW: 215.9, pageH: 279.4, cols: 2, rows: 3,  w: 101.6, h: 84.7, mTop: 12.7, mLeft: 4.0, gapX: 5.2, gapY: 0.0 },
+    pimaco_6183_10: { paper: 'letter', pageW: 215.9, pageH: 279.4, cols: 2, rows: 5,  w: 101.6, h: 50.8, mTop: 12.7, mLeft: 4.0, gapX: 5.2, gapY: 0.0 },
+    pimaco_6182_14: { paper: 'letter', pageW: 215.9, pageH: 279.4, cols: 2, rows: 7,  w: 101.6, h: 33.9, mTop: 21.0, mLeft: 4.0, gapX: 5.2, gapY: 0.0 },
+    pimaco_6180_30: { paper: 'letter', pageW: 215.9, pageH: 279.4, cols: 3, rows: 10, w: 66.7,  h: 25.4, mTop: 12.7, mLeft: 4.8, gapX: 3.1, gapY: 0.0 },
+    pimaco_a4364_12:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 3, rows: 4,  w: 63.5,  h: 71.9, mTop: 4.7,  mLeft: 7.2, gapX: 2.6, gapY: 0.0 },
+    pimaco_a4363_14:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 2, rows: 7,  w: 99.0,  h: 38.1, mTop: 15.2, mLeft: 4.7, gapX: 2.6, gapY: 0.0 },
+    pimaco_a4362_16:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 2, rows: 8,  w: 99.0,  h: 33.9, mTop: 12.9, mLeft: 4.7, gapX: 2.6, gapY: 0.0 },
+    pimaco_a4361_18:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 3, rows: 6,  w: 63.5,  h: 46.5, mTop: 9.1,  mLeft: 7.2, gapX: 2.6, gapY: 0.0 },
+    pimaco_a4360_21:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 3, rows: 7,  w: 63.5,  h: 38.1, mTop: 15.2, mLeft: 7.2, gapX: 2.6, gapY: 0.0 },
+    pimaco_a4354_22:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 2, rows: 11, w: 99.0,  h: 25.4, mTop: 8.8,  mLeft: 4.7, gapX: 2.6, gapY: 0.0 },
+    a4_24_padrao:   { paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 3, rows: 8,  w: 63.5,  h: 33.9, mTop: 12.9, mLeft: 7.2, gapX: 2.6, gapY: 0.0 },
+    pimaco_a4355_27:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 3, rows: 9,  w: 63.5,  h: 31.0, mTop: 9.0,  mLeft: 7.2, gapX: 2.6, gapY: 0.0 },
+    pimaco_a4356_33:{ paper: 'a4',     pageW: 210.0, pageH: 297.0, cols: 3, rows: 11, w: 63.5,  h: 25.4, mTop: 8.8,  mLeft: 7.2, gapX: 2.6, gapY: 0.0 }
+  };
+
   window.onload = () => {
     loadFromLocalStorage();
     relayout();
+    updateLabelsPreview();
     setInterval(saveToLocalStorage, 5000);
   };
 
@@ -543,6 +758,7 @@
     
     document.getElementById('viewRooms').classList.toggle('hidden', tab !== 'rooms');
     document.getElementById('viewEditor').classList.toggle('hidden', tab !== 'editor');
+    document.getElementById('viewLabels').classList.toggle('hidden', tab !== 'labels');
     document.getElementById('viewManual').classList.toggle('hidden', tab !== 'manual');
     
     // Gerenciar painéis laterais
@@ -551,6 +767,10 @@
     
     document.getElementById('roomTools').classList.toggle('hidden', tab !== 'rooms');
     document.getElementById('editorTools').classList.toggle('hidden', tab !== 'editor');
+    document.getElementById('labelTools').classList.toggle('hidden', tab !== 'labels');
+
+    document.getElementById('rightBadgeTools').classList.toggle('hidden', tab === 'labels');
+    document.getElementById('rightLabelTools').classList.toggle('hidden', tab !== 'labels');
     
     // Ajustar layout da grid principal
     if(tab === 'manual') {
@@ -562,6 +782,8 @@
     if(tab === 'editor') {
         relayout();
         updateLayersList();
+    } else if(tab === 'labels') {
+        updateLabelsPreview();
     }
   }
 
@@ -1122,12 +1344,24 @@
     return list;
   }
 
-  function openSelectPeopleModal() {
+  function openSelectPeopleModal(target = 'badges') {
+    modalPdfTarget = target;
     const all = getAllOrderedPeople();
     if (all.length === 0) return alert("Carregue ou adicione participantes primeiro.");
     // Limpa IDs que não existem mais
     const validIds = new Set(all.map(p => p.id));
     selectedPeopleForPdf.forEach(id => { if (!validIds.has(id)) selectedPeopleForPdf.delete(id); });
+    const titleEl = document.querySelector('#selectPeopleModal .modal-header div div:first-child');
+    const subEl = document.querySelector('#selectPeopleModal .modal-header div div:nth-child(2)');
+    if (titleEl && subEl) {
+      if (target === 'labels') {
+        titleEl.innerText = '🏷️ Escolher Participantes para Gerar Etiquetas';
+        subEl.innerText = 'As etiquetas serão geradas apenas para os nomes marcados, mantendo a cor da sala de cada um.';
+      } else {
+        titleEl.innerText = '🎯 Escolher Participantes para Gerar Crachás';
+        subEl.innerText = 'Os crachás serão gerados automaticamente com a cor da sala de cada nome selecionado.';
+      }
+    }
     document.getElementById('searchModalPeople').value = '';
     document.getElementById('selectPeopleModal').classList.remove('hidden');
     renderSelectPeopleModalList();
@@ -1256,7 +1490,444 @@
       return alert("Nenhum participante válido selecionado.");
     }
     closeSelectPeopleModal();
-    await generateFinalPDF(chosen);
+    if (modalPdfTarget === 'labels') {
+      await generateLabelsPDF(chosen);
+    } else {
+      await generateFinalPDF(chosen);
+    }
+  }
+
+  // ==================== MÓDULO DE ETIQUETAS ADESIVAS ====================
+  function getLabelConfig() {
+    const paper = document.getElementById('labelPaperSize').value;
+    let pageW = parseFloat(document.getElementById('labelPageW').value) || 215.9;
+    let pageH = parseFloat(document.getElementById('labelPageH').value) || 279.4;
+    if (paper === 'letter') { pageW = 215.9; pageH = 279.4; }
+    else if (paper === 'a4') { pageW = 210.0; pageH = 297.0; }
+
+    const cols = Math.max(1, parseInt(document.getElementById('labelCols').value, 10) || 1);
+    const rows = Math.max(1, parseInt(document.getElementById('labelRows').value, 10) || 1);
+    const w = Math.max(5, parseFloat(document.getElementById('labelW').value) || 101.6);
+    const h = Math.max(5, parseFloat(document.getElementById('labelH').value) || 25.4);
+    const mTop = Math.max(0, parseFloat(document.getElementById('labelMarginTop').value) || 0);
+    const mLeft = Math.max(0, parseFloat(document.getElementById('labelMarginLeft').value) || 0);
+    const gapX = Math.max(0, parseFloat(document.getElementById('labelGapX').value) || 0);
+    const gapY = Math.max(0, parseFloat(document.getElementById('labelGapY').value) || 0);
+    const offsetX = parseFloat(document.getElementById('labelOffsetX').value) || 0;
+    const offsetY = parseFloat(document.getElementById('labelOffsetY').value) || 0;
+    const startPos = Math.max(1, parseInt(document.getElementById('labelStartPos').value, 10) || 1);
+    const copies = Math.max(1, parseInt(document.getElementById('labelCopies').value, 10) || 1);
+
+    const line1Text = document.getElementById('labelLine1Text').value || '';
+    const line1Size = Math.max(4, parseFloat(document.getElementById('labelLine1Size').value) || 11);
+    const line1Color = document.getElementById('labelLine1Color').value || '#000000';
+
+    const line2Text = document.getElementById('labelLine2Text').value || '';
+    const line2Size = Math.max(4, parseFloat(document.getElementById('labelLine2Size').value) || 9);
+    const line2Color = document.getElementById('labelLine2Color').value || '#333333';
+
+    const textAlign = document.getElementById('labelTextAlign').value || 'center';
+    const colorStyle = document.getElementById('labelColorStyle').value || 'stripe';
+    const showQR = document.getElementById('labelShowQR').checked;
+    const drawOutline = document.getElementById('labelDrawOutline').checked;
+
+    return {
+      preset: document.getElementById('labelPresetSelect').value,
+      paper, pageW, pageH, cols, rows, w, h, mTop, mLeft, gapX, gapY,
+      offsetX, offsetY, startPos, copies,
+      line1Text, line1Size, line1Color,
+      line2Text, line2Size, line2Color,
+      textAlign, colorStyle, showQR, drawOutline
+    };
+  }
+
+  function applyLabelPreset(presetKey) {
+    const p = LABEL_PRESETS[presetKey] || customLabelPresets[presetKey];
+    document.getElementById('btnDeleteCustomPreset').classList.toggle('hidden', !customLabelPresets[presetKey]);
+    if (!p) {
+      updateLabelsPreview();
+      return;
+    }
+    document.getElementById('labelPaperSize').value = p.paper || 'custom';
+    document.getElementById('customPaperDimsBox').classList.toggle('hidden', p.paper !== 'custom');
+    document.getElementById('labelPageW').value = p.pageW;
+    document.getElementById('labelPageH').value = p.pageH;
+    document.getElementById('labelCols').value = p.cols;
+    document.getElementById('labelRows').value = p.rows;
+    document.getElementById('labelW').value = p.w;
+    document.getElementById('labelH').value = p.h;
+    document.getElementById('labelMarginTop').value = p.mTop;
+    document.getElementById('labelMarginLeft').value = p.mLeft;
+    document.getElementById('labelGapX').value = p.gapX;
+    document.getElementById('labelGapY').value = p.gapY;
+    updateLabelsPreview();
+    saveToLocalStorage();
+  }
+
+  function onLabelPaperSizeChange() {
+    const paper = document.getElementById('labelPaperSize').value;
+    document.getElementById('customPaperDimsBox').classList.toggle('hidden', paper !== 'custom');
+    if (paper === 'letter') {
+      document.getElementById('labelPageW').value = 215.9;
+      document.getElementById('labelPageH').value = 279.4;
+    } else if (paper === 'a4') {
+      document.getElementById('labelPageW').value = 210.0;
+      document.getElementById('labelPageH').value = 297.0;
+    }
+    onLabelCustomDimensionEdit();
+  }
+
+  function onLabelCustomDimensionEdit() {
+    document.getElementById('labelPresetSelect').value = 'custom';
+    document.getElementById('btnDeleteCustomPreset').classList.add('hidden');
+    updateLabelsPreview();
+  }
+
+  function autoCalculateLabelMargins() {
+    const cfg = getLabelConfig();
+    const totalUsedW = cfg.cols * cfg.w + (cfg.cols - 1) * cfg.gapX;
+    const totalUsedH = cfg.rows * cfg.h + (cfg.rows - 1) * cfg.gapY;
+    const newLeft = Math.max(0, (cfg.pageW - totalUsedW) / 2);
+    const newTop = Math.max(0, (cfg.pageH - totalUsedH) / 2);
+    document.getElementById('labelMarginLeft').value = Number(newLeft.toFixed(2));
+    document.getElementById('labelMarginTop').value = Number(newTop.toFixed(2));
+    onLabelCustomDimensionEdit();
+    saveToLocalStorage();
+  }
+
+  function renderCustomPresetsDropdown() {
+    const group = document.getElementById('customSavedPresetsGroup');
+    if (!group) return;
+    group.innerHTML = '';
+    const keys = Object.keys(customLabelPresets);
+    keys.forEach(k => {
+      const item = customLabelPresets[k];
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.innerText = `${item.name} (${item.cols * item.rows}/folha • ${item.w}×${item.h} mm)`;
+      group.appendChild(opt);
+    });
+  }
+
+  function saveCustomLabelPreset() {
+    const cfg = getLabelConfig();
+    const defaultName = `Meu Padrão ${cfg.cols * cfg.rows}/folha (${cfg.w}x${cfg.h}mm)`;
+    const name = prompt("Digite um nome para salvar esta configuração de folha de etiquetas:", defaultName);
+    if (!name || !name.trim()) return;
+    const key = 'user_preset_' + Date.now();
+    customLabelPresets[key] = {
+      name: name.trim(),
+      paper: cfg.paper,
+      pageW: cfg.pageW,
+      pageH: cfg.pageH,
+      cols: cfg.cols,
+      rows: cfg.rows,
+      w: cfg.w,
+      h: cfg.h,
+      mTop: cfg.mTop,
+      mLeft: cfg.mLeft,
+      gapX: cfg.gapX,
+      gapY: cfg.gapY
+    };
+    renderCustomPresetsDropdown();
+    document.getElementById('labelPresetSelect').value = key;
+    document.getElementById('btnDeleteCustomPreset').classList.remove('hidden');
+    saveToLocalStorage();
+  }
+
+  function deleteCurrentCustomPreset() {
+    const currentKey = document.getElementById('labelPresetSelect').value;
+    if (!customLabelPresets[currentKey]) return;
+    if (!confirm(`Deseja excluir o padrão salvo "${customLabelPresets[currentKey].name}"?`)) return;
+    delete customLabelPresets[currentKey];
+    renderCustomPresetsDropdown();
+    document.getElementById('labelPresetSelect').value = 'custom';
+    document.getElementById('btnDeleteCustomPreset').classList.add('hidden');
+    saveToLocalStorage();
+  }
+
+  function formatLabelText(template, person) {
+    if (!template) return '';
+    const insc = person ? person.inscricao : '01';
+    const nome = person ? person.nome : 'JOÃO DA SILVA EXEMPLO';
+    const sala = person ? (person.sala || 'Sala 01') : 'Sala 01';
+    const lider = (person && person.sala && roomLideres[person.sala]) ? roomLideres[person.sala] : 'Líder';
+    return template
+      .replaceAll('{{INSCRICAO}}', insc)
+      .replaceAll('{{NOME}}', nome)
+      .replaceAll('{{SALA}}', sala)
+      .replaceAll('{{LIDER}}', lider);
+  }
+
+  function updateLabelsPreview() {
+    const cfg = getLabelConfig();
+    const perSheet = cfg.cols * cfg.rows;
+    const allPeople = getAllOrderedPeople();
+    const samplePerson = allPeople[0] || { inscricao: '01', nome: 'PARTICIPANTE EXEMPLO', sala: 'Sala 01', color: '#22d3ee' };
+    const sampleColor = samplePerson.color || (samplePerson.sala && roomColors[samplePerson.sala]) || '#2563eb';
+
+    // Atualiza contadores e textos informativos
+    document.getElementById('labelSingleSpecsInfo').innerText = `${cfg.w.toFixed(1)} × ${cfg.h.toFixed(1)} mm • ${cfg.cols} col × ${cfg.rows} lin`;
+    document.getElementById('labelTotalPerSheetBadge').innerText = `${perSheet} etiquetas / folha`;
+
+    const paperLabel = cfg.paper === 'letter' ? 'Carta' : (cfg.paper === 'a4' ? 'A4' : 'Personalizado');
+    document.getElementById('labelSheetSummaryInfo').innerText = `Folha ${paperLabel} (${cfg.pageW.toFixed(1)} × ${cfg.pageH.toFixed(1)} mm) • Margens: Sup ${cfg.mTop}mm / Esq ${cfg.mLeft}mm`;
+
+    const totalLabelsToPrint = Math.max(1, allPeople.length * cfg.copies);
+    const totalSlotsUsed = (cfg.startPos - 1) + totalLabelsToPrint;
+    const totalPages = Math.max(1, Math.ceil(totalSlotsUsed / perSheet));
+    document.getElementById('labelPagesNeededBadge').innerText = `${totalPages} folha(s) p/ ${allPeople.length || 1} pessoa(s)`;
+
+    // 1. Renderiza preview individual ampliado (escala: 3.4 px por mm)
+    const singleScale = 3.4;
+    const singleBox = document.getElementById('singleLabelPreviewBox');
+    const pw = Math.round(cfg.w * singleScale);
+    const ph = Math.round(cfg.h * singleScale);
+
+    const l1 = formatLabelText(cfg.line1Text, samplePerson);
+    const l2 = formatLabelText(cfg.line2Text, samplePerson);
+
+    const borderCss = cfg.colorStyle === 'border'
+      ? `3px solid ${sampleColor}`
+      : '1px dashed #94a3b8';
+
+    const stripeHtml = cfg.colorStyle === 'stripe'
+      ? `<div style="width:${Math.max(8, Math.round(cfg.w * 0.045 * singleScale))}px; height:100%; background:${sampleColor}; flex-shrink:0;"></div>`
+      : '';
+
+    const qrSizePx = Math.max(24, Math.min(ph - 10, Math.round(cfg.h * 0.76 * singleScale)));
+    const qrHtml = cfg.showQR
+      ? `<div style="width:${qrSizePx}px; height:${qrSizePx}px; margin-right:8px; border:1px solid #cbd5e1; background:#f8fafc; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:bold; color:#334155; flex-shrink:0;">QR</div>`
+      : '';
+
+    const l2Html = l2.trim() !== ''
+      ? (cfg.colorStyle === 'pill'
+          ? `<div style="margin-top:3px;"><span style="background:${sampleColor}; color:#000; padding:1px 7px; border-radius:4px; font-size:${Math.round(cfg.line2Size * 1.15)}px; font-weight:bold;">${l2}</span></div>`
+          : `<div style="margin-top:2px; font-size:${Math.round(cfg.line2Size * 1.15)}px; color:${cfg.line2Color}; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${l2}</div>`)
+      : '';
+
+    singleBox.innerHTML = `
+      <div style="width:${pw}px; height:${ph}px; background:#ffffff; color:#000; border:${borderCss}; border-radius:4px; display:flex; align-items:center; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.18); font-family:Arial, sans-serif;">
+        ${stripeHtml}
+        <div style="flex:1; padding:4px 10px; overflow:hidden; text-align:${cfg.textAlign}; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-size:${Math.round(cfg.line1Size * 1.15)}px; color:${cfg.line1Color}; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${l1}</div>
+          ${l2Html}
+        </div>
+        ${qrHtml}
+      </div>
+    `;
+
+    // 2. Renderiza preview da folha completa (escala: 1.7 px por mm)
+    const sheetScale = 1.7;
+    const sheetEl = document.getElementById('sheetPaperPreview');
+    sheetEl.style.width = Math.round(cfg.pageW * sheetScale) + 'px';
+    sheetEl.style.height = Math.round(cfg.pageH * sheetScale) + 'px';
+
+    // Expande lista considerando cópias para simulação da 1ª folha
+    const expandedList = [];
+    const sourceList = allPeople.length > 0 ? allPeople : [samplePerson];
+    sourceList.forEach(p => {
+      for (let c = 0; c < cfg.copies; c++) expandedList.push(p);
+    });
+
+    let cellsHtml = '';
+    for (let r = 0; r < cfg.rows; r++) {
+      for (let c = 0; c < cfg.cols; c++) {
+        const slotIndex = r * cfg.cols + c; // 0-based
+        const slotNumber = slotIndex + 1;
+        const xMm = cfg.mLeft + cfg.offsetX + c * (cfg.w + cfg.gapX);
+        const yMm = cfg.mTop + cfg.offsetY + r * (cfg.h + cfg.gapY);
+        const leftPx = Math.round(xMm * sheetScale);
+        const topPx = Math.round(yMm * sheetScale);
+        const widthPx = Math.round(cfg.w * sheetScale);
+        const heightPx = Math.round(cfg.h * sheetScale);
+
+        if (slotNumber < cfg.startPos) {
+          cellsHtml += `
+            <div class="sheet-label-cell skipped" style="left:${leftPx}px; top:${topPx}px; width:${widthPx}px; height:${heightPx}px; justify-content:center;" title="Posição ${slotNumber}: Pulada (Etiqueta já destacada)">
+              <span style="font-size:8px; color:#64748b; font-weight:bold;">#${slotNumber} (Pulada)</span>
+            </div>
+          `;
+        } else {
+          const personIdx = slotNumber - cfg.startPos;
+          const p = expandedList[personIdx];
+          if (p) {
+            const pColor = p.color || (p.sala && roomColors[p.sala]) || '#2563eb';
+            const text1 = formatLabelText(cfg.line1Text, p);
+            const cellBorder = cfg.colorStyle === 'border' ? `1.5px solid ${pColor}` : '1px dashed #94a3b8';
+            const miniStripe = cfg.colorStyle === 'stripe' ? `<div style="width:4px; height:100%; background:${pColor}; flex-shrink:0;"></div>` : '';
+            cellsHtml += `
+              <div class="sheet-label-cell" style="left:${leftPx}px; top:${topPx}px; width:${widthPx}px; height:${heightPx}px; border:${cellBorder};" title="Posição ${slotNumber}: ${text1}">
+                ${miniStripe}
+                <div style="flex:1; padding:1px 4px; overflow:hidden; text-align:${cfg.textAlign}; font-size:7px; font-weight:bold; white-space:nowrap; text-overflow:ellipsis;">
+                  ${text1}
+                </div>
+              </div>
+            `;
+          } else {
+            cellsHtml += `
+              <div class="sheet-label-cell" style="left:${leftPx}px; top:${topPx}px; width:${widthPx}px; height:${heightPx}px; justify-content:center; opacity:0.4;" title="Posição ${slotNumber}: Vazia">
+                <span style="font-size:7px; color:#94a3b8;">#${slotNumber}</span>
+              </div>
+            `;
+          }
+        }
+      }
+    }
+    sheetEl.innerHTML = cellsHtml;
+  }
+
+  function createQrDataUrl(text) {
+    return new Promise((resolve) => {
+      const buffer = document.getElementById('qrBuffer');
+      buffer.innerHTML = '';
+      new QRCode(buffer, { text: String(text || '—'), width: 120, height: 120 });
+      setTimeout(() => {
+        const canvas = buffer.querySelector('canvas');
+        const img = buffer.querySelector('img');
+        if (canvas) resolve(canvas.toDataURL('image/png'));
+        else if (img && img.src) resolve(img.src);
+        else resolve(null);
+      }, 30);
+    });
+  }
+
+  async function generateLabelsPDF(customPeopleList = null) {
+    if (people.length === 0) return alert("Carregue ou adicione os participantes primeiro na Aba 1.");
+    const sourcePeople = Array.isArray(customPeopleList) ? customPeopleList : getAllOrderedPeople();
+    if (sourcePeople.length === 0) return alert("Nenhum participante encontrado para gerar etiquetas.");
+
+    const cfg = getLabelConfig();
+    const perSheet = cfg.cols * cfg.rows;
+    if (cfg.startPos > perSheet) {
+      return alert(`A posição inicial (${cfg.startPos}) não pode ser maior que o total de etiquetas por folha (${perSheet}).`);
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [cfg.pageW, cfg.pageH],
+      orientation: cfg.pageW > cfg.pageH ? 'landscape' : 'portrait'
+    });
+
+    // Expande lista pelas cópias solicitadas
+    const printQueue = [];
+    sourcePeople.forEach(p => {
+      for (let c = 0; c < cfg.copies; c++) printQueue.push(p);
+    });
+
+    const rgbL1 = hexToRgb(cfg.line1Color);
+    const rgbL2 = hexToRgb(cfg.line2Color);
+
+    let slotIndex = cfg.startPos - 1; // 0-based na folha atual
+
+    for (let i = 0; i < printQueue.length; i++) {
+      if (i > 0 && slotIndex % perSheet === 0) {
+        doc.addPage([cfg.pageW, cfg.pageH], cfg.pageW > cfg.pageH ? 'landscape' : 'portrait');
+      }
+
+      const posInPage = slotIndex % perSheet;
+      const col = posInPage % cfg.cols;
+      const row = Math.floor(posInPage / cfg.cols);
+
+      const x = cfg.mLeft + cfg.offsetX + col * (cfg.w + cfg.gapX);
+      const y = cfg.mTop + cfg.offsetY + row * (cfg.h + cfg.gapY);
+
+      const p = printQueue[i];
+      const pColorHex = p.color || (p.sala && roomColors[p.sala]) || '#000000';
+      const pColorRgb = hexToRgb(pColorHex);
+
+      // 1. Contorno guia de teste (se ativado) ou Borda Colorida da Sala
+      if (cfg.colorStyle === 'border') {
+        doc.setDrawColor(pColorRgb.r, pColorRgb.g, pColorRgb.b);
+        doc.setLineWidth(0.6);
+        doc.setLineDashPattern([], 0);
+        doc.rect(x + 0.3, y + 0.3, cfg.w - 0.6, cfg.h - 0.6, 'S');
+      } else if (cfg.drawOutline) {
+        doc.setDrawColor(190, 190, 190);
+        doc.setLineWidth(0.15);
+        doc.setLineDashPattern([1, 1], 0);
+        doc.rect(x, y, cfg.w, cfg.h, 'S');
+        doc.setLineDashPattern([], 0);
+      }
+
+      // 2. Faixa lateral colorida (se estilo = stripe)
+      let innerLeft = x + 2.2;
+      let innerRight = x + cfg.w - 2.2;
+      if (cfg.colorStyle === 'stripe') {
+        const stripeW = Math.min(4.0, Math.max(2.2, cfg.w * 0.04));
+        doc.setFillColor(pColorRgb.r, pColorRgb.g, pColorRgb.b);
+        doc.rect(x, y, stripeW, cfg.h, 'F');
+        innerLeft = x + stripeW + 2.0;
+      }
+
+      // 3. QR Code opcional à direita da etiqueta
+      if (cfg.showQR) {
+        const qrSize = Math.min(cfg.h - 2.4, cfg.w * 0.25, 22);
+        if (qrSize >= 6) {
+          const qrDataUrl = await createQrDataUrl(p.inscricao);
+          if (qrDataUrl) {
+            const qrX = x + cfg.w - qrSize - 1.5;
+            const qrY = y + (cfg.h - qrSize) / 2;
+            doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+            innerRight = qrX - 1.5;
+          }
+        }
+      }
+
+      // 4. Textos (Linha 1 e Linha 2) com truncamento automático na largura útil
+      const availW = Math.max(10, innerRight - innerLeft);
+      const textX = cfg.textAlign === 'center' ? (innerLeft + innerRight) / 2 : innerLeft;
+      const alignOpt = cfg.textAlign === 'center' ? 'center' : 'left';
+
+      const line1Str = formatLabelText(cfg.line1Text, p);
+      const line2Str = formatLabelText(cfg.line2Text, p);
+      const hasLine2 = line2Str.trim() !== '';
+
+      const l1HeightMm = cfg.line1Size * 0.3527;
+      const l2HeightMm = cfg.line2Size * 0.3527;
+
+      // Ajusta linha 1 para caber na largura
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(cfg.line1Size);
+      doc.setTextColor(rgbL1.r, rgbL1.g, rgbL1.b);
+      const l1Lines = doc.splitTextToSize(line1Str, availW);
+      const l1Final = l1Lines[0] || '';
+
+      if (!hasLine2) {
+        const yCenter = y + cfg.h / 2 + (l1HeightMm * 0.35);
+        doc.text(l1Final, textX, yCenter, { align: alignOpt });
+      } else {
+        const totalBlockH = l1HeightMm + l2HeightMm + 1.4;
+        const startY = y + (cfg.h - totalBlockH) / 2 + l1HeightMm * 0.85;
+        doc.text(l1Final, textX, startY, { align: alignOpt });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(cfg.line2Size);
+        const l2Lines = doc.splitTextToSize(line2Str, availW);
+        const l2Final = l2Lines[0] || '';
+        const l2Y = startY + l2HeightMm + 1.4;
+
+        if (cfg.colorStyle === 'pill') {
+          const textW = Math.min(availW, doc.getTextWidth(l2Final) + 3.0);
+          const pillH = l2HeightMm + 1.4;
+          const pillX = cfg.textAlign === 'center' ? textX - textW / 2 : innerLeft;
+          const pillY = l2Y - l2HeightMm * 0.85 - 0.3;
+          doc.setFillColor(pColorRgb.r, pColorRgb.g, pColorRgb.b);
+          doc.roundedRect(pillX, pillY, textW, pillH, 0.8, 0.8, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(0, 0, 0);
+          doc.text(l2Final, cfg.textAlign === 'center' ? textX : innerLeft + 1.5, l2Y, { align: alignOpt });
+        } else {
+          doc.setTextColor(rgbL2.r, rgbL2.g, rgbL2.b);
+          doc.text(l2Final, textX, l2Y, { align: alignOpt });
+        }
+      }
+
+      slotIndex++;
+    }
+
+    doc.save(`Etiquetas_${cfg.cols * cfg.rows}porFolha_Shekinah_Pro.pdf`);
   }
 
   async function generateFinalPDF(customPeopleList = null) {
@@ -1383,6 +2054,8 @@
       roomPrefix: document.getElementById('roomPrefix').value,
       roomCapacity: document.getElementById('roomCapacity').value,
       totalRoomsTarget: document.getElementById('totalRoomsTarget').value,
+      labelConfig: getLabelConfig(),
+      customLabelPresets,
       people, rooms, roomColors, roomLideres, items
     };
     localStorage.setItem('shekinah_pro_project', JSON.stringify(project));
@@ -1406,6 +2079,41 @@
     if (data.roomPrefix) document.getElementById('roomPrefix').value = data.roomPrefix;
     if (data.roomCapacity) document.getElementById('roomCapacity').value = data.roomCapacity;
     if (data.totalRoomsTarget) document.getElementById('totalRoomsTarget').value = data.totalRoomsTarget;
+    customLabelPresets = data.customLabelPresets || {};
+    renderCustomPresetsDropdown();
+    if (data.labelConfig) {
+      const lc = data.labelConfig;
+      if (lc.preset) document.getElementById('labelPresetSelect').value = lc.preset;
+      if (lc.paper) {
+        document.getElementById('labelPaperSize').value = lc.paper;
+        document.getElementById('customPaperDimsBox').classList.toggle('hidden', lc.paper !== 'custom');
+      }
+      if (lc.pageW !== undefined) document.getElementById('labelPageW').value = lc.pageW;
+      if (lc.pageH !== undefined) document.getElementById('labelPageH').value = lc.pageH;
+      if (lc.cols !== undefined) document.getElementById('labelCols').value = lc.cols;
+      if (lc.rows !== undefined) document.getElementById('labelRows').value = lc.rows;
+      if (lc.w !== undefined) document.getElementById('labelW').value = lc.w;
+      if (lc.h !== undefined) document.getElementById('labelH').value = lc.h;
+      if (lc.mTop !== undefined) document.getElementById('labelMarginTop').value = lc.mTop;
+      if (lc.mLeft !== undefined) document.getElementById('labelMarginLeft').value = lc.mLeft;
+      if (lc.gapX !== undefined) document.getElementById('labelGapX').value = lc.gapX;
+      if (lc.gapY !== undefined) document.getElementById('labelGapY').value = lc.gapY;
+      if (lc.offsetX !== undefined) document.getElementById('labelOffsetX').value = lc.offsetX;
+      if (lc.offsetY !== undefined) document.getElementById('labelOffsetY').value = lc.offsetY;
+      if (lc.startPos !== undefined) document.getElementById('labelStartPos').value = lc.startPos;
+      if (lc.copies !== undefined) document.getElementById('labelCopies').value = lc.copies;
+      if (lc.line1Text !== undefined) document.getElementById('labelLine1Text').value = lc.line1Text;
+      if (lc.line1Size !== undefined) document.getElementById('labelLine1Size').value = lc.line1Size;
+      if (lc.line1Color !== undefined) document.getElementById('labelLine1Color').value = lc.line1Color;
+      if (lc.line2Text !== undefined) document.getElementById('labelLine2Text').value = lc.line2Text;
+      if (lc.line2Size !== undefined) document.getElementById('labelLine2Size').value = lc.line2Size;
+      if (lc.line2Color !== undefined) document.getElementById('labelLine2Color').value = lc.line2Color;
+      if (lc.textAlign !== undefined) document.getElementById('labelTextAlign').value = lc.textAlign;
+      if (lc.colorStyle !== undefined) document.getElementById('labelColorStyle').value = lc.colorStyle;
+      if (lc.showQR !== undefined) document.getElementById('labelShowQR').checked = Boolean(lc.showQR);
+      if (lc.drawOutline !== undefined) document.getElementById('labelDrawOutline').checked = Boolean(lc.drawOutline);
+      document.getElementById('btnDeleteCustomPreset').classList.toggle('hidden', !customLabelPresets[lc.preset]);
+    }
     people = data.people || []; rooms = data.rooms || {}; roomColors = data.roomColors || {}; roomLideres = data.roomLideres || {};
     document.getElementById('stage').innerHTML = "";
     (data.items||[]).forEach(it => {
