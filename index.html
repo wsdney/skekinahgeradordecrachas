@@ -399,19 +399,34 @@
         </div>
 
         <div class="panel-section">
-            <div class="section-title">✍️ Conteúdo e Estilo da Etiqueta</div>
-            <label>Linha 1 (Principal)</label>
-            <input type="text" id="labelLine1Text" value="{{INSCRICAO}} - {{NOME}}" placeholder="Ex: {{INSCRICAO}} - {{NOME}}" oninput="updateLabelsPreview()">
+            <div class="section-title">✍️ Conteúdo e Ordenação da Etiqueta</div>
+            <label>Formato Automático do Conteúdo</label>
+            <select id="labelContentMode" onchange="onLabelContentModeChange()">
+                <option value="num_top_name_bottom">🔢 Somente Nº em Cima e Nome em Baixo (Automático)</option>
+                <option value="num_name_room">🏠 Nº e Nome em Cima + Sala em Baixo</option>
+                <option value="num_name_single">➖ Nº e Nome na Mesma Linha</option>
+                <option value="custom">⚙️ Personalizado (Livre)</option>
+            </select>
+
+            <label>Ordem de Busca dos Participantes</label>
+            <select id="labelSortOrder" onchange="updateLabelsPreview()">
+                <option value="numeric">🔢 Por Ordem Numérica de Inscrição (1, 2, 3...)</option>
+                <option value="alpha">🔤 Por Ordem Alfabética (A–Z)</option>
+                <option value="room">🏠 Por Ordem de Salas</option>
+            </select>
+
+            <label>Linha 1 (Em Cima)</label>
+            <input type="text" id="labelLine1Text" value="{{INSCRICAO}}" placeholder="Ex: {{INSCRICAO}}" oninput="onLabelManualTextEdit()">
             <div class="grid2">
-                <div><label>Tam. Fonte L1 (pt)</label><input type="number" id="labelLine1Size" value="11" min="5" max="36" oninput="updateLabelsPreview()"></div>
+                <div><label>Tam. Fonte L1 (pt)</label><input type="number" id="labelLine1Size" value="13" min="5" max="36" oninput="updateLabelsPreview()"></div>
                 <div><label>Cor Texto L1</label><input type="color" id="labelLine1Color" value="#000000" oninput="updateLabelsPreview()"></div>
             </div>
 
-            <label>Linha 2 (Secundária — Sala / Líder / Evento)</label>
-            <input type="text" id="labelLine2Text" value="{{SALA}}" placeholder="Ex: {{SALA}} (deixe vazio p/ ocultar)" oninput="updateLabelsPreview()">
+            <label>Linha 2 (Em Baixo)</label>
+            <input type="text" id="labelLine2Text" value="{{NOME}}" placeholder="Ex: {{NOME}} (deixe vazio p/ ocultar)" oninput="onLabelManualTextEdit()">
             <div class="grid2">
-                <div><label>Tam. Fonte L2 (pt)</label><input type="number" id="labelLine2Size" value="9" min="5" max="28" oninput="updateLabelsPreview()"></div>
-                <div><label>Cor Texto L2</label><input type="color" id="labelLine2Color" value="#333333" oninput="updateLabelsPreview()"></div>
+                <div><label>Tam. Fonte L2 (pt)</label><input type="number" id="labelLine2Size" value="10" min="5" max="28" oninput="updateLabelsPreview()"></div>
+                <div><label>Cor Texto L2</label><input type="color" id="labelLine2Color" value="#000000" oninput="updateLabelsPreview()"></div>
             </div>
 
             <div class="grid2">
@@ -425,10 +440,10 @@
                 <div>
                     <label>Indicador Cor da Sala</label>
                     <select id="labelColorStyle" onchange="updateLabelsPreview()">
+                        <option value="none">Sem Cor (Só Nº e Nome / P&B)</option>
                         <option value="stripe">Faixa Lateral Colorida</option>
                         <option value="border">Borda Colorida</option>
                         <option value="pill">Tarja na Linha 2</option>
-                        <option value="none">Sem Cor (P&B / Econômico)</option>
                     </select>
                 </div>
             </div>
@@ -588,7 +603,8 @@
               <ul>
                   <li><strong>Catálogo de Padrões Oficiais (Pimaco / Colacril / A4 e Carta):</strong> Escolha com 1 clique entre os principais formatos do mercado, incluindo o padrão de <strong>20 etiquetas por folha (Pimaco 6181 / 6081 / 6281 em Carta ou Padrão A4 2×10)</strong>, além de folhas de <strong>6, 10, 12, 14, 16, 18, 21, 22, 24, 27, 30 e 33 etiquetas por folha</strong>.</li>
                   <li><strong>Personalização Completa de Medidas (mm):</strong> Além dos padrões prontos, você pode personalizar livremente o tamanho do papel (Carta, A4 ou medida customizada), quantidade de colunas e linhas, largura e altura da etiqueta (mm), margens superior/esquerda e espaçamentos horizontal/vertical. Você também pode clicar em <strong>💾 Salvar Meu Padrão</strong> para deixar suas medidas salvas no menu!</li>
-                  <li><strong>Conteúdo, Cor da Sala e QR Code:</strong> Configure até duas linhas de texto dinâmico (<code>{{INSCRICAO}}</code>, <code>{{NOME}}</code>, <code>{{SALA}}</code>, <code>{{LIDER}}</code>), escolha se deseja exibir a <strong>Cor da Sala</strong> (Faixa Lateral, Borda Colorida, Tarja ou P&B Econômico) e ative opcionalmente o <strong>QR Code</strong>.</li>
+                  <li><strong>Modo Automático — Somente Nº em Cima e Nome em Baixo (Por Ordem Numérica):</strong> Em <strong>Modelo Rápido de Conteúdo</strong>, você pode escolher a opção padrão <strong>🔢 Somente Nº em Cima e Nome em Baixo (Automático)</strong> combinada com a ordenação <strong>🔢 Por Ordem Numérica de Inscrição (1, 2, 3...)</strong> (ou clicar diretamente no botão rápido <strong>🔢 GERAR SÓ Nº (EM CIMA) + NOME (EM BAIXO)</strong> no painel direito). O sistema busca automaticamente toda a lista de participantes, ordena do menor para o maior número de inscrição e posiciona o número em destaque na parte superior e o nome logo abaixo dele!</li>
+                  <li><strong>Conteúdo Personalizado, Cor da Sala e QR Code:</strong> Você também pode escolher outros modelos prontos ou configurar livremente até duas linhas de texto dinâmico (<code>{{INSCRICAO}}</code>, <code>{{NOME}}</code>, <code>{{SALA}}</code>, <code>{{LIDER}}</code>), definir a ordenação (Numérica, Alfabética ou por Sala), escolher se deseja exibir a <strong>Cor da Sala</strong> (Sem Cor P&B, Faixa Lateral, Borda Colorida ou Tarja) e ativar opcionalmente o <strong>QR Code</strong>.</li>
                   <li><strong>Reaproveitamento de Folha Parcialmente Usada:</strong> No campo <strong>Iniciar Impressão na Etiqueta Nº</strong>, informe a partir de qual etiqueta deve começar a impressão na 1ª folha (ex.: se as 4 primeiras etiquetas da folha já foram destacadas, digite <strong>5</strong> para começar na 5ª posição!).</li>
                   <li><strong>Ajuste Fino de Impressora (Deslocamento X e Y):</strong> Compense variações de puxada de papel da sua impressora Jato de Tinta sem precisar alterar as medidas da etiqueta, e use a opção de <strong>contorno guia</strong> para testar o alinhamento em folha sulfite comum antes de imprimir no adesivo.</li>
                   <li><strong>Impressão Total ou Seletiva:</strong> Gere etiquetas para todos os participantes (<strong>🖨️ GERAR ETIQUETAS (TODOS)</strong>) ou apenas para nomes selecionados (<strong>🎯 ESCOLHER NOMES P/ ETIQUETAS</strong>).</li>
@@ -669,7 +685,8 @@
 
           <div class="panel-section">
               <div class="section-title">🚀 Exportar Etiquetas (PDF)</div>
-              <button class="btn secondary" style="width:100%; height:46px; font-size: 13px;" onclick="generateLabelsPDF()">🖨️ GERAR ETIQUETAS (TODOS)</button>
+              <button class="btn" style="background: var(--accent); color: #000; width:100%; height:44px; font-size: 11px; font-weight: 800; margin-bottom: 6px;" onclick="generateQuickNumberAndNameLabels()">🔢 GERAR SÓ Nº (EM CIMA) + NOME (EM BAIXO)</button>
+              <button class="btn secondary" style="width:100%; height:44px; font-size: 12px;" onclick="generateLabelsPDF()">🖨️ GERAR ETIQUETAS (TODOS)</button>
               <button class="btn outline" style="width:100%; height:40px; margin-top:8px; font-size: 12px; border-color: var(--accent); color: var(--accent);" onclick="openSelectPeopleModal('labels')">🎯 ESCOLHER NOMES P/ ETIQUETAS</button>
           </div>
       </div>
@@ -1331,6 +1348,22 @@
     }
   }
 
+  function parseRawNameListFallback() {
+    const raw = (document.getElementById('nameList')?.value || '').trim();
+    if (!raw) return [];
+    const lines = raw.split(/\r?\n/).filter(l => l.trim() !== "");
+    return lines.map((l, i) => {
+      const match = l.trim().match(/^(\d+)[^\w]*([\s-–—.]*)(.*)?$/);
+      let num = (i + 1).toString().padStart(2, '0');
+      let name = l.trim();
+      if (match) {
+        num = match[1].padStart(2, '0');
+        name = match[3] ? match[3].trim() : `Participante ${num}`;
+      }
+      return { id: `raw_${i}_${num}`, inscricao: num, nome: name, sala: 'Sem Sala', color: '#000000' };
+    });
+  }
+
   function getAllOrderedPeople() {
     let list = [];
     const roomKeys = Object.keys(rooms).sort();
@@ -1338,10 +1371,46 @@
       roomKeys.forEach(rName => {
         (rooms[rName] || []).forEach(p => list.push(p));
       });
-    } else {
+    } else if (people.length > 0) {
       list = [...people];
+    } else {
+      list = parseRawNameListFallback();
     }
     return list;
+  }
+
+  function getLabelParticipantsList(customPeopleList = null) {
+    const baseList = Array.isArray(customPeopleList) ? [...customPeopleList] : [...getAllOrderedPeople()];
+    const sortOrder = document.getElementById('labelSortOrder')?.value || 'numeric';
+
+    const extractNum = (val) => {
+      const digits = String(val || '').replace(/\D/g, '');
+      return digits ? parseInt(digits, 10) : Number.MAX_SAFE_INTEGER;
+    };
+
+    if (sortOrder === 'numeric') {
+      baseList.sort((a, b) => {
+        const na = extractNum(a.inscricao);
+        const nb = extractNum(b.inscricao);
+        if (na !== nb) return na - nb;
+        const cmpInsc = String(a.inscricao || '').localeCompare(String(b.inscricao || ''), 'pt-BR', { numeric: true });
+        if (cmpInsc !== 0) return cmpInsc;
+        return String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR', { sensitivity: 'base' });
+      });
+    } else if (sortOrder === 'alpha') {
+      baseList.sort((a, b) => {
+        const cmpName = String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR', { sensitivity: 'base' });
+        if (cmpName !== 0) return cmpName;
+        return extractNum(a.inscricao) - extractNum(b.inscricao);
+      });
+    } else if (sortOrder === 'room') {
+      baseList.sort((a, b) => {
+        const cmpRoom = String(a.sala || '').localeCompare(String(b.sala || ''), 'pt-BR', { numeric: true });
+        if (cmpRoom !== 0) return cmpRoom;
+        return extractNum(a.inscricao) - extractNum(b.inscricao);
+      });
+    }
+    return baseList;
   }
 
   function openSelectPeopleModal(target = 'badges') {
@@ -1518,16 +1587,19 @@
     const startPos = Math.max(1, parseInt(document.getElementById('labelStartPos').value, 10) || 1);
     const copies = Math.max(1, parseInt(document.getElementById('labelCopies').value, 10) || 1);
 
+    const contentMode = document.getElementById('labelContentMode')?.value || 'num_top_name_bottom';
+    const sortOrder = document.getElementById('labelSortOrder')?.value || 'numeric';
+
     const line1Text = document.getElementById('labelLine1Text').value || '';
-    const line1Size = Math.max(4, parseFloat(document.getElementById('labelLine1Size').value) || 11);
+    const line1Size = Math.max(4, parseFloat(document.getElementById('labelLine1Size').value) || 13);
     const line1Color = document.getElementById('labelLine1Color').value || '#000000';
 
     const line2Text = document.getElementById('labelLine2Text').value || '';
-    const line2Size = Math.max(4, parseFloat(document.getElementById('labelLine2Size').value) || 9);
-    const line2Color = document.getElementById('labelLine2Color').value || '#333333';
+    const line2Size = Math.max(4, parseFloat(document.getElementById('labelLine2Size').value) || 10);
+    const line2Color = document.getElementById('labelLine2Color').value || '#000000';
 
     const textAlign = document.getElementById('labelTextAlign').value || 'center';
-    const colorStyle = document.getElementById('labelColorStyle').value || 'stripe';
+    const colorStyle = document.getElementById('labelColorStyle').value || 'none';
     const showQR = document.getElementById('labelShowQR').checked;
     const drawOutline = document.getElementById('labelDrawOutline').checked;
 
@@ -1535,10 +1607,59 @@
       preset: document.getElementById('labelPresetSelect').value,
       paper, pageW, pageH, cols, rows, w, h, mTop, mLeft, gapX, gapY,
       offsetX, offsetY, startPos, copies,
+      contentMode, sortOrder,
       line1Text, line1Size, line1Color,
       line2Text, line2Size, line2Color,
       textAlign, colorStyle, showQR, drawOutline
     };
+  }
+
+  function onLabelContentModeChange() {
+    const mode = document.getElementById('labelContentMode').value;
+    if (mode === 'num_top_name_bottom') {
+      document.getElementById('labelLine1Text').value = '{{INSCRICAO}}';
+      document.getElementById('labelLine1Size').value = 13;
+      document.getElementById('labelLine2Text').value = '{{NOME}}';
+      document.getElementById('labelLine2Size').value = 10;
+      document.getElementById('labelTextAlign').value = 'center';
+      document.getElementById('labelColorStyle').value = 'none';
+      document.getElementById('labelSortOrder').value = 'numeric';
+    } else if (mode === 'num_name_room') {
+      document.getElementById('labelLine1Text').value = '{{INSCRICAO}} - {{NOME}}';
+      document.getElementById('labelLine1Size').value = 11;
+      document.getElementById('labelLine2Text').value = '{{SALA}} • Líder: {{LIDER}}';
+      document.getElementById('labelLine2Size').value = 9;
+      document.getElementById('labelColorStyle').value = 'stripe';
+    } else if (mode === 'num_name_single') {
+      document.getElementById('labelLine1Text').value = '{{INSCRICAO}} - {{NOME}}';
+      document.getElementById('labelLine1Size').value = 11;
+      document.getElementById('labelLine2Text').value = '';
+    }
+    updateLabelsPreview();
+    saveToLocalStorage();
+  }
+
+  function onLabelManualTextEdit() {
+    const l1 = document.getElementById('labelLine1Text').value.trim();
+    const l2 = document.getElementById('labelLine2Text').value.trim();
+    const modeEl = document.getElementById('labelContentMode');
+    if (l1 === '{{INSCRICAO}}' && l2 === '{{NOME}}') {
+      modeEl.value = 'num_top_name_bottom';
+    } else if (l1 === '{{INSCRICAO}} - {{NOME}}' && l2 === '{{SALA}} • Líder: {{LIDER}}') {
+      modeEl.value = 'num_name_room';
+    } else if (l1 === '{{INSCRICAO}} - {{NOME}}' && l2 === '') {
+      modeEl.value = 'num_name_single';
+    } else {
+      modeEl.value = 'custom';
+    }
+    updateLabelsPreview();
+  }
+
+  async function generateQuickNumberAndNameLabels() {
+    document.getElementById('labelContentMode').value = 'num_top_name_bottom';
+    document.getElementById('labelSortOrder').value = 'numeric';
+    onLabelContentModeChange();
+    await generateLabelsPDF();
   }
 
   function applyLabelPreset(presetKey) {
@@ -1662,7 +1783,7 @@
   function updateLabelsPreview() {
     const cfg = getLabelConfig();
     const perSheet = cfg.cols * cfg.rows;
-    const allPeople = getAllOrderedPeople();
+    const allPeople = getLabelParticipantsList();
     const samplePerson = allPeople[0] || { inscricao: '01', nome: 'PARTICIPANTE EXEMPLO', sala: 'Sala 01', color: '#22d3ee' };
     const sampleColor = samplePerson.color || (samplePerson.sala && roomColors[samplePerson.sala]) || '#2563eb';
 
@@ -1703,7 +1824,7 @@
     const l2Html = l2.trim() !== ''
       ? (cfg.colorStyle === 'pill'
           ? `<div style="margin-top:3px;"><span style="background:${sampleColor}; color:#000; padding:1px 7px; border-radius:4px; font-size:${Math.round(cfg.line2Size * 1.15)}px; font-weight:bold;">${l2}</span></div>`
-          : `<div style="margin-top:2px; font-size:${Math.round(cfg.line2Size * 1.15)}px; color:${cfg.line2Color}; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${l2}</div>`)
+          : `<div style="margin-top:2px; font-size:${Math.round(cfg.line2Size * 1.15)}px; color:${cfg.line2Color}; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${l2}</div>`)
       : '';
 
     singleBox.innerHTML = `
@@ -1754,13 +1875,18 @@
           if (p) {
             const pColor = p.color || (p.sala && roomColors[p.sala]) || '#2563eb';
             const text1 = formatLabelText(cfg.line1Text, p);
+            const text2 = formatLabelText(cfg.line2Text, p);
             const cellBorder = cfg.colorStyle === 'border' ? `1.5px solid ${pColor}` : '1px dashed #94a3b8';
             const miniStripe = cfg.colorStyle === 'stripe' ? `<div style="width:4px; height:100%; background:${pColor}; flex-shrink:0;"></div>` : '';
+            const miniLine2Html = text2.trim() !== ''
+              ? `<div style="font-size:6.5px; font-weight:600; color:${cfg.line2Color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.15;">${text2}</div>`
+              : '';
             cellsHtml += `
-              <div class="sheet-label-cell" style="left:${leftPx}px; top:${topPx}px; width:${widthPx}px; height:${heightPx}px; border:${cellBorder};" title="Posição ${slotNumber}: ${text1}">
+              <div class="sheet-label-cell" style="left:${leftPx}px; top:${topPx}px; width:${widthPx}px; height:${heightPx}px; border:${cellBorder};" title="Posição ${slotNumber}: ${text1}${text2 ? ' - ' + text2 : ''}">
                 ${miniStripe}
-                <div style="flex:1; padding:1px 4px; overflow:hidden; text-align:${cfg.textAlign}; font-size:7px; font-weight:bold; white-space:nowrap; text-overflow:ellipsis;">
-                  ${text1}
+                <div style="flex:1; padding:1px 4px; overflow:hidden; text-align:${cfg.textAlign}; display:flex; flex-direction:column; justify-content:center;">
+                  <div style="font-size:7.5px; font-weight:bold; color:${cfg.line1Color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.15;">${text1}</div>
+                  ${miniLine2Html}
                 </div>
               </div>
             `;
@@ -1793,9 +1919,8 @@
   }
 
   async function generateLabelsPDF(customPeopleList = null) {
-    if (people.length === 0) return alert("Carregue ou adicione os participantes primeiro na Aba 1.");
-    const sourcePeople = Array.isArray(customPeopleList) ? customPeopleList : getAllOrderedPeople();
-    if (sourcePeople.length === 0) return alert("Nenhum participante encontrado para gerar etiquetas.");
+    const sourcePeople = getLabelParticipantsList(customPeopleList);
+    if (sourcePeople.length === 0) return alert("Carregue, cole ou adicione os participantes primeiro na Aba 1.");
 
     const cfg = getLabelConfig();
     const perSheet = cfg.cols * cfg.rows;
@@ -1875,7 +2000,7 @@
         }
       }
 
-      // 4. Textos (Linha 1 e Linha 2) com truncamento automático na largura útil
+      // 4. Textos (Linha 1 em cima e Linha 2 em baixo) com truncamento automático na largura útil
       const availW = Math.max(10, innerRight - innerLeft);
       const textX = cfg.textAlign === 'center' ? (innerLeft + innerRight) / 2 : innerLeft;
       const alignOpt = cfg.textAlign === 'center' ? 'center' : 'left';
@@ -1887,7 +2012,7 @@
       const l1HeightMm = cfg.line1Size * 0.3527;
       const l2HeightMm = cfg.line2Size * 0.3527;
 
-      // Ajusta linha 1 para caber na largura
+      // Ajusta linha 1 (em cima) para caber na largura
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(cfg.line1Size);
       doc.setTextColor(rgbL1.r, rgbL1.g, rgbL1.b);
@@ -1902,7 +2027,8 @@
         const startY = y + (cfg.h - totalBlockH) / 2 + l1HeightMm * 0.85;
         doc.text(l1Final, textX, startY, { align: alignOpt });
 
-        doc.setFont('helvetica', 'normal');
+        const isBoldLine2 = cfg.contentMode === 'num_top_name_bottom' || cfg.colorStyle === 'none';
+        doc.setFont('helvetica', isBoldLine2 ? 'bold' : 'normal');
         doc.setFontSize(cfg.line2Size);
         const l2Lines = doc.splitTextToSize(line2Str, availW);
         const l2Final = l2Lines[0] || '';
@@ -2102,6 +2228,8 @@
       if (lc.offsetY !== undefined) document.getElementById('labelOffsetY').value = lc.offsetY;
       if (lc.startPos !== undefined) document.getElementById('labelStartPos').value = lc.startPos;
       if (lc.copies !== undefined) document.getElementById('labelCopies').value = lc.copies;
+      if (lc.contentMode) document.getElementById('labelContentMode').value = lc.contentMode;
+      if (lc.sortOrder) document.getElementById('labelSortOrder').value = lc.sortOrder;
       if (lc.line1Text !== undefined) document.getElementById('labelLine1Text').value = lc.line1Text;
       if (lc.line1Size !== undefined) document.getElementById('labelLine1Size').value = lc.line1Size;
       if (lc.line1Color !== undefined) document.getElementById('labelLine1Color').value = lc.line1Color;
